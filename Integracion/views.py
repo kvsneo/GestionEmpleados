@@ -1,9 +1,10 @@
 from django.contrib.auth import logout
-from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
-from .forms import AdminCreationForm, ManagerCreationForm, EmployeeCreationForm
+
 from .admin import admin_required
+from .forms import AdminCreationForm, ManagerCreationForm, EmployeeCreationForm
 
 
 # Create your views here.
@@ -15,13 +16,16 @@ def custom_logout(request):
     else:
         logout(request)
     return redirect('login')
-from django.shortcuts import render
 
+
+@login_required
 def error_view(request):
     username = request.GET.get('username', 'Unknown')
     role = request.GET.get('role', 'Unknown')
     message = f"Usuario: {username} con Rol: {role} no tiene acceso a esta página."
     return render(request, 'error.html', {'message': message})
+
+
 @login_required
 @admin_required
 def create_admin(request):
@@ -36,6 +40,7 @@ def create_admin(request):
         form = AdminCreationForm()
     return render(request, 'create_admin.html', {'form': form})
 
+
 @login_required
 @admin_required
 def create_manager(request):
@@ -49,18 +54,9 @@ def create_manager(request):
     else:
         form = ManagerCreationForm()
     return render(request, 'create_manager.html', {'form': form})
-"""""
-def create_employee(request):
-    if request.method == 'POST':
-        form = EmployeeCreationForm(request.POST, user=request.user)  # Pasamos el usuario autenticado
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.role = 'employee'
-            user.save()
-            return redirect('admin_dashboard')
-    else:
-        form = EmployeeCreationForm(user=request.user)  # Pasamos el usuario autenticado
-    return render(request, 'create_employee.html', {'form': form})"""
+
+
+@login_required
 def create_employee(request):
     if request.method == 'POST':
         form = EmployeeCreationForm(request.POST, user=request.user)
@@ -74,6 +70,7 @@ def create_employee(request):
         # Si el usuario es un manager, desactivamos el campo 'manager'
         if request.user.role == 'manager':
             form.fields['manager'].widget.attrs['disabled'] = 'disabled'  # Deshabilita el campo en el formulario
-            form.fields['manager'].widget.attrs['style'] = 'background-color: #f0f0f0; color: #888;'  # Estilo traslúcido
+            form.fields['manager'].widget.attrs[
+                'style'] = 'background-color: #f0f0f0; color: #888;'  # Estilo traslúcido
 
     return render(request, 'create_employee.html', {'form': form})
