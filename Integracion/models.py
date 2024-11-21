@@ -21,6 +21,9 @@ class CustomUser(AbstractUser):
         related_name='employees',
         help_text="Si el usuario es un empleado, asigna un gerente.",
     )
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+    middle_name = models.CharField(max_length=30, blank=True, null=True)
 
     def is_admin(self):
         return self.role == 'admin'

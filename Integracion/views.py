@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.contrib import messages
+from django.core.mail import send_mail
 
 
 from .admin import admin_required, admin_or_manager_required
@@ -58,6 +59,16 @@ def create_manager(request):
             user.role = 'manager'
             user.save()
             logger.info(f"Manager created: {user.username} by {request.user.username}")
+
+            # Enviar correo electrónico
+            send_mail(
+                'Cuenta de Gerente Creada',
+                f'Su nombre de usuario es {user.username} y su contraseña es {form.cleaned_data["password1"]}',
+                'your_email@example.com',
+                [user.email],
+                fail_silently=False,
+            )
+
             return redirect('admin_dashboard')
     else:
         form = ManagerCreationForm()
@@ -74,17 +85,24 @@ def create_employee(request):
             user.role = 'employee'
             user.save()
             logger.info(f"Employee created: {user.username} by {request.user.username}")
+
+            # Enviar correo electrónico
+            send_mail(
+                'Cuenta de Empleado Creada',
+                f'Su nombre de usuario es {user.username} y su contraseña es {form.cleaned_data["password1"]}',
+                'your_email@example.com',
+                [user.email],
+                fail_silently=False,
+            )
+
             return redirect('admin_dashboard')
     else:
         form = EmployeeCreationForm(user=request.user)
         # Si el usuario es un manager, desactivamos el campo 'manager'
         if request.user.role == 'manager':
-            form.fields['manager'].widget.attrs['disabled'] = 'disabled'  # Deshabilita el campo en el formulario
-            form.fields['manager'].widget.attrs[
-                'style'] = 'background-color: #f0f0f0; color: #888;'  # Estilo traslúcido
-
+            form.fields['manager'].widget.attrs['disabled'] = 'disabled'
+            form.fields['manager'].widget.attrs['style'] = 'background-color: #f0f0f0; color: #888;'
     return render(request, 'create_employee.html', {'form': form})
-
 
 @login_required
 @admin_or_manager_required

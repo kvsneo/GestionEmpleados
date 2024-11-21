@@ -9,13 +9,22 @@ from logging_config import logger
 class AdminCreationForm(UserCreationForm):
     class Meta:
         model = CustomUser
-        fields = ('username', 'password1', 'password2', 'email')
+        fields = ('first_name', 'last_name', 'middle_name', 'password1', 'password2', 'email')
 
 
 class ManagerCreationForm(UserCreationForm):
     class Meta:
         model = CustomUser
-        fields = ('username', 'password1', 'password2', 'email')
+        fields = ('first_name', 'last_name', 'middle_name', 'password1', 'password2', 'email')
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.username = (self.cleaned_data['first_name'][:3] +
+                         self.cleaned_data['last_name'][:3] +
+                         self.cleaned_data['middle_name'][:3]).lower()
+        if commit:
+            user.save()
+        return user
 
 
 class EmployeeCreationForm(UserCreationForm):
@@ -23,25 +32,23 @@ class EmployeeCreationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'password1', 'password2', 'email', 'manager')
+        fields = ('first_name', 'last_name', 'middle_name', 'password1', 'password2', 'email', 'manager')
 
-    @classmethod
-    def get_manager(cls, user):
-        if user and user.role == 'manager':
-            return user  # Si el usuario logueado es un manager, se devuelve ese usuario.
-        return None  # Si no, se retorna None.
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.username = (self.cleaned_data['first_name'][:3] +
+                         self.cleaned_data['last_name'][:3] +
+                         self.cleaned_data['middle_name'][:3]).lower()
+        if commit:
+            user.save()
+        return user
 
     def __init__(self, *args, **kwargs):
-        # El formulario puede acceder al usuario desde el contexto de la vista
-        user = kwargs.pop('user', None)  # Usamos kwargs.pop para obtener el usuario desde el contexto
-
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-
-        # Si el usuario es un manager, lo asignamos como el manager predeterminado
         if user and user.role == 'manager':
             self.fields['manager'].initial = user
             self.fields['manager'].queryset = CustomUser.objects.filter(role='manager', id=user.id)
-
 
 class UserEditForm(forms.ModelForm):
     class Meta:
