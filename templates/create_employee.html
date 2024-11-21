@@ -1,0 +1,13 @@
+<!-- create_employee.html -->
+<style>
+    input[disabled], select[disabled], textarea[disabled] {
+        background-color: #f0f0f0;
+        color: #888;
+        cursor: not-allowed;
+    }
+</style>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create Employee</button>
+</form>

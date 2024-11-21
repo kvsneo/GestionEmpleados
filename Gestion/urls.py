@@ -20,11 +20,15 @@ from django.urls import path
 from Integracion import views
 
 urlpatterns = [
+    path('', views.home, name='home'),
     path('admin/', admin.site.urls),
-    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('logout/', views.custom_logout, name='logout'),
-    path('dashboard/', views.dashboard, name='dashboard'),
-    path('lista_usuarios/', views.lista_usuarios, name='lista_usuarios'),
-    path('create_user/<str:role>/', views.create_user, name='create_user'),
+path('error/', views.error_view, name='error'),
+    path('create_admin/', views.create_admin, name='create_admin'),
+    path('create_manager/', views.create_manager, name='create_manager'),
+    path('create_employee/', views.create_employee, name='create_employee'),
+
+
 
 ]
