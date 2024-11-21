@@ -7,8 +7,6 @@ from .admin import admin_required
 
 
 # Create your views here.
-def home(request):
-    return render(request, 'registration/login.html')
 @require_http_methods(["POST", "GET"])
 def custom_logout(request):
     """Cerrar sesión con POST o redirigir con GET y cerrar Sesion"""
