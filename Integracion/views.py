@@ -1,15 +1,19 @@
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods
+from django.contrib import messages
 
-from .admin import admin_required, manager_required, admin_or_manager_required
-from .forms import AdminCreationForm, ManagerCreationForm, EmployeeCreationForm
+
+from .admin import admin_required, admin_or_manager_required
+from .forms import AdminCreationForm, ManagerCreationForm, EmployeeCreationForm, UserEditForm, ReassignManagerForm
 from .models import CustomUser
+from logging_config import logger
 
 
 # Create your views here.
 @require_http_methods(["POST", "GET"])
+@login_required
 def custom_logout(request):
     """Cerrar sesión con POST o redirigir con GET y cerrar Sesion"""
     if request.method == "POST":
@@ -24,6 +28,7 @@ def error_view(request):
     username = request.GET.get('username', 'Unknown')
     role = request.GET.get('role', 'Unknown')
     message = f"Usuario: {username} con Rol: {role} no tiene acceso a esta página."
+    logger.warning(f"Unauthorized access attempt by {request.user.username} for user {username} with role {role}")
     return render(request, 'error.html', {'message': message})
 
 
@@ -36,6 +41,7 @@ def create_admin(request):
             user = form.save(commit=False)
             user.role = 'admin'
             user.save()
+            logger.info(f"Admin created: {user.username} by {request.user.username}")
             return redirect('admin_dashboard')
     else:
         form = AdminCreationForm()
@@ -51,6 +57,7 @@ def create_manager(request):
             user = form.save(commit=False)
             user.role = 'manager'
             user.save()
+            logger.info(f"Manager created: {user.username} by {request.user.username}")
             return redirect('admin_dashboard')
     else:
         form = ManagerCreationForm()
@@ -58,7 +65,7 @@ def create_manager(request):
 
 
 @login_required
-@manager_required
+@admin_or_manager_required
 def create_employee(request):
     if request.method == 'POST':
         form = EmployeeCreationForm(request.POST, user=request.user)
@@ -66,6 +73,7 @@ def create_employee(request):
             user = form.save(commit=False)
             user.role = 'employee'
             user.save()
+            logger.info(f"Employee created: {user.username} by {request.user.username}")
             return redirect('admin_dashboard')
     else:
         form = EmployeeCreationForm(user=request.user)
@@ -102,3 +110,53 @@ def list_users(request):
         'empleados': empleados,
         'is_admin': user.is_admin(),
     })
+
+
+@login_required
+@admin_or_manager_required
+def edit_user(request, user_id):
+    user = get_object_or_404(CustomUser, id=user_id)
+    if request.method == 'POST':
+        form = UserEditForm(request.POST, instance=user, user=request.user)
+        if form.is_valid():
+            form.save()
+            logger.info(f"User edited: {user.username} by {request.user.username}")
+            return redirect('list_users')
+    else:
+        form = UserEditForm(instance=user, user=request.user)
+    return render(request, 'edit_user.html', {'form': form})
+
+
+@login_required
+@admin_or_manager_required
+def delete_user(request, user_id):
+    user = get_object_or_404(CustomUser, id=user_id)
+
+    if request.method == 'POST':
+        if user.role == 'admin':
+            # Verificar si es el último administrador
+            admin_count = CustomUser.objects.filter(role='admin').count()
+            if admin_count <= 1:
+                messages.error(request, 'No puedes eliminar el último administrador.')
+                logger.warning(f"Attempt to delete the last admin: {user.username} by {request.user.username}")
+                return redirect('list_users')
+
+        if user.role == 'manager':
+            form = ReassignManagerForm(request.POST)
+            if form.is_valid():
+                new_manager = form.cleaned_data['new_manager']
+                employees = user.employees.all()
+                for employee in employees:
+                    employee.manager = new_manager
+                    employee.save()
+                user.delete()
+                logger.info(f"Manager deleted: {user.username} by {request.user.username}")
+                return redirect('list_users')
+        else:
+            user.delete()
+            logger.info(f"User deleted: {user.username} by {request.user.username}")
+            return redirect('list_users')
+    else:
+        form = ReassignManagerForm()
+
+    return render(request, 'confirm_delete.html', {'user': user, 'form': form})

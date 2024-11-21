@@ -7,13 +7,24 @@
 </head>
 <body>
 <h1>Lista de Usuarios</h1>
+ {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+ {% endif %}
 
 {% if is_admin %}
     <h2>Administradores</h2>
     {% if administradores %}
         <ul>
             {% for admin in administradores %}
-                <li>{{ admin.username }} - {{ admin.email }}</li>
+                <li>
+                    {{ admin.username }} - {{ admin.email }}
+                    <a href="{% url 'edit_user' admin.id %}">Editar</a>
+                    <a href="{% url 'delete_user' admin.id %}">Eliminar</a>
+                </li>
             {% endfor %}
         </ul>
     {% else %}
@@ -24,7 +35,11 @@
     {% if gerentes %}
         <ul>
             {% for gerente in gerentes %}
-                <li>{{ gerente.username }} - {{ gerente.email }}</li>
+                <li>
+                    {{ gerente.username }} - {{ gerente.email }}
+                    <a href="{% url 'edit_user' gerente.id %}">Editar</a>
+                    <a href="{% url 'delete_user' gerente.id %}">Eliminar</a>
+                </li>
             {% endfor %}
         </ul>
     {% else %}
@@ -47,6 +62,8 @@
                     {% endif %}
                     )
                 {% endif %}
+                <a href="{% url 'edit_user' empleado.id %}">Editar</a>
+                <a href="{% url 'delete_user' empleado.id %}">Eliminar</a>
             </li>
         {% endfor %}
     </ul>
