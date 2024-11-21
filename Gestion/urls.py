@@ -29,5 +29,6 @@ urlpatterns = [
     path('create_admin/', views.create_admin, name='create_admin'),
     path('create_manager/', views.create_manager, name='create_manager'),
     path('create_employee/', views.create_employee, name='create_employee'),
+    path('list_users/', views.list_users, name='list_users'),
 
 ]

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Usuarios</title>
+</head>
+<body>
+<h1>Lista de Usuarios</h1>
+
+{% if is_admin %}
+    <h2>Administradores</h2>
+    {% if administradores %}
+        <ul>
+            {% for admin in administradores %}
+                <li>{{ admin.username }} - {{ admin.email }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No hay administradores registrados.</p>
+    {% endif %}
+
+    <h2>Gerentes</h2>
+    {% if gerentes %}
+        <ul>
+            {% for gerente in gerentes %}
+                <li>{{ gerente.username }} - {{ gerente.email }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No hay gerentes registrados.</p>
+    {% endif %}
+{% endif %}
+
+<h2>Empleados</h2>
+{% if empleados %}
+    <ul>
+        {% for empleado in empleados %}
+            <li>
+                {{ empleado.username }} - {{ empleado.email }}
+                {% if is_admin %}
+                    (Gerente:
+                    {% if empleado.manager %}
+                        {{ empleado.manager.username }}
+                    {% else %}
+                        Sin asignar
+                    {% endif %}
+                    )
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No hay empleados registrados.</p>
+{% endif %}
+</body>
+</html>

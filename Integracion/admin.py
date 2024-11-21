@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+
 from Integracion.models import CustomUser
 
 
@@ -11,9 +12,28 @@ def admin_required(view_func):
         if not request.user.is_authenticated or request.user.role != 'admin':
             return HttpResponseRedirect(f"{reverse('error')}?username={request.user.username}&role={request.user.role}")
         return view_func(request, *args, **kwargs)
+
     return _wrapped_view
 
-#Ordena la informacion en admin de django
+
+def manager_required(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated or request.user.role != 'manager':
+            return HttpResponseRedirect(f"{reverse('error')}?username={request.user.username}&role={request.user.role}")
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped_view
+
+
+def admin_or_manager_required(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        if request.user.is_authenticated and (request.user.is_admin() or request.user.is_manager()):
+            return view_func(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(f"{reverse('error')}?username={request.user.username}&role={request.user.role}")
+
+    return _wrapped_view
+
 
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
