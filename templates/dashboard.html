@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Bienvenido, {{ user.username }}</h1>
+
+    {% if is_admin %}
+        <h2>Opciones de Administrador</h2>
+        <ul>
+            <li><a href="{% url 'create_user' %}">Crear Administrador</a></li>
+            <li><a href="{% url 'create_user' %}">Crear Gerente</a></li>
+            <li><a href="{% url 'create_user' %}">Crear Empleado</a></li>
+        </ul>
+    {% elif is_manager %}
+        <h2>Opciones de Gerente</h2>
+        <ul>
+            <li><a href="{% url 'create_user' %}">Crear Empleado</a></li>
+        </ul>
+    {% elif is_employee %}
+        <h2>Bienvenido Empleado</h2>
+        <p>¡Hola {{ user.username }}! No tienes opciones administrativas.</p>
+    {% endif %}
+</body>
+<form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit">Cerrar sesión</button>
+</form>
+</html>

@@ -123,9 +123,17 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+#Usuarios Personalizados
+AUTH_USER_MODEL = 'Integracion.CustomUser'
+
 # Rutas para Almacenamineto de Imagenes de Usuarios
 ImgUsuarios_dir = BASE_DIR / '/ImgUsuarios/'
 #MEDIA_ROOT1 = os.path.join(BASE_DIR1, 'ImgUsuarios')
 #Ruta para Almacenar Justificantes
 Justificantes_dir = '/Justificantes/'
 #MEDIA_ROOT2 = os.path.join(BASE_DIR2, 'Justificantes')
+
+#Rediccionamiento de Login
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'  # Dónde redirigir después de iniciar sesión
+LOGOUT_REDIRECT_URL = '/login/'    # Dónde redirigir después de cerrar sesión
