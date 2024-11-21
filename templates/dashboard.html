@@ -11,14 +11,14 @@
     {% if is_admin %}
         <h2>Opciones de Administrador</h2>
         <ul>
-            <li><a href="{% url 'create_user' %}">Crear Administrador</a></li>
-            <li><a href="{% url 'create_user' %}">Crear Gerente</a></li>
-            <li><a href="{% url 'create_user' %}">Crear Empleado</a></li>
+            <a href="{{ create_admin_url }}">Create Administrator</a>
+            <a href="{{ create_manager_url }}">Create Manager</a>
+            <a href="{{ create_employee_url }}">Create Employee</a>
         </ul>
     {% elif is_manager %}
         <h2>Opciones de Gerente</h2>
         <ul>
-            <li><a href="{% url 'create_user' %}">Crear Empleado</a></li>
+            <a href="{{ create_employee_url }}">Create Employee</a>
         </ul>
     {% elif is_employee %}
         <h2>Bienvenido Empleado</h2>

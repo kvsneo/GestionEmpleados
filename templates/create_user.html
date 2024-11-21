@@ -1,6 +1,17 @@
-<form method="post">
+
+{% block content %}
+  <h2>Create {{ role|title }}</h2>
+  <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    
-    <button type="submit">Crear Usuario</button>
-</form>
+    {% if role == 'employee' %}
+      <label for="manager">Manager:</label>
+      <select name="manager" id="manager">
+        {% for manager in managers %}
+          <option value="{{ manager.id }}">{{ manager.username }}</option>
+        {% endfor %}
+      </select>
+    {% endif %}
+    <button type="submit">Create {{ role|title }}</button>
+  </form>
+{% endblock %}
