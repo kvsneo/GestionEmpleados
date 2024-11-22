@@ -522,3 +522,37 @@ def change_password(request):
     else:
         form = EmployeePasswordChangeForm(request.user)
     return render(request, 'change_password.html', {'form': form})
+
+
+from django.shortcuts import render, redirect
+from .forms import ScheduleForm
+from .models import EmployeeSchedule
+
+def change_schedule(request):
+    if request.method == 'POST':
+        form = ScheduleForm(request.POST)
+        if form.is_valid():
+            employee = form.cleaned_data['employee']
+            month = form.cleaned_data['month']
+            schedule = form.cleaned_data['schedule']
+
+            # Map the selected schedule to start and end times
+            schedule_mapping = {
+                '7am-3pm': ('07:00', '15:00'),
+                '3pm-11pm': ('15:00', '23:00'),
+                '11pm-7am': ('23:00', '07:00')
+            }
+            schedule_start, schedule_end = schedule_mapping[schedule]
+
+            # Check if the schedule already exists for the employee and month
+            employee_schedule, created = EmployeeSchedule.objects.update_or_create(
+                employee=employee,
+                month=month,
+                defaults={'schedule_start': schedule_start, 'schedule_end': schedule_end}
+            )
+            return redirect('dashboard')
+    else:
+        form = ScheduleForm()
+
+    return render(request, 'change_schedule.html', {'form': form})
+

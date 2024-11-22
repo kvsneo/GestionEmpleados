@@ -147,3 +147,27 @@ class EmployeePasswordChangeForm(PasswordChangeForm):
     old_password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
     new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
     new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+
+
+from django import forms
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class ScheduleForm(forms.Form):
+    MONTH_CHOICES = [
+        ('January', 'January'), ('February', 'February'), ('March', 'March'),
+        ('April', 'April'), ('May', 'May'), ('June', 'June'),
+        ('July', 'July'), ('August', 'August'), ('September', 'September'),
+        ('October', 'October'), ('November', 'November'), ('December', 'December')
+    ]
+
+    SCHEDULE_CHOICES = [
+        ('7am-3pm', '7am-3pm'),
+        ('3pm-11pm', '3pm-11pm'),
+        ('11pm-7am', '11pm-7am')
+    ]
+
+    employee = forms.ModelChoiceField(queryset=User.objects.filter(role='employee'), label='Empleado')
+    month = forms.ChoiceField(choices=MONTH_CHOICES, label='Mes')
+    schedule = forms.ChoiceField(choices=SCHEDULE_CHOICES, label='Horario')

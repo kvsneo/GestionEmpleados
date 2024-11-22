@@ -48,6 +48,8 @@ urlpatterns = [
 
     path('change_password/', views.change_password, name='change_password'),
 
+path('change_schedule/', views.change_schedule, name='change_schedule'),
+
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL1, document_root=settings.MEDIA_ROOT1)

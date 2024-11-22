@@ -18,17 +18,20 @@
                     <a href="/" class="nav-link">Home</a>
                 </li>
                 {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a href="{% url 'login' %}" class="nav-link"
-                        >complted tasks</a
-                        >
-                    </li>
-                    <li class="nav-item">
-                        <a href="{% url 'login' %}" class="nav-link">Tasks</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{% url 'login' %}" class="nav-link">Create Task</a>
-                    </li>
+                    {% if es_empleado %}
+                        <li class="nav-item">
+                            <a href="{% url 'subir_justificante' %}" class="nav-link">Subir Justificante</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'lista_justificantes' %}" class="nav-link">Ver Justificantes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'edit_employee_profile' %}" class="nav-link">Editar Perfil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'change_password' %}" class="nav-link">Cambiar Contraseña</a>
+                        </li>
+                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link" href="/logout">Logout</a>
                     </li>

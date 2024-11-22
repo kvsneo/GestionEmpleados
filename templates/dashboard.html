@@ -13,20 +13,25 @@
             </div>
         {% endif %}
         <!-- Opciones para Administradores -->
-        {% if es_admin %}
+       {% if es_admin %}
             <div class="card mb-4">
                 <div class="card-header">
                     <h2>Opciones de Administrador</h2>
                 </div>
                 <div class="card-body">
                     <ul>
-                        <li><a href="{% url 'create_manager' %}" class="btn btn-primary">Gestión de Usuarios
-                            Gerentes</a></li>
+                        <li><a href="{% url 'create_admin' %}" class="btn btn-primary">Crear Administrador</a></li>
+                        <li><a href="{% url 'create_manager' %}" class="btn btn-primary">Crear Manager</a></li>
+                        <li><a href="{% url 'create_employee' %}" class="btn btn-primary">Crear Empleado</a></li>
+                        <li><a href="{% url 'list_users' %}" class="btn btn-primary">Lista de Usuarios</a></li>
+                        <li><a href="{% url 'index_photos' %}" class="btn btn-primary">Indexar Fotos</a></li>
+                        <li><a href="{% url 'edit_employee_profile' %}" class="btn btn-primary">Editar Perfil</a></li>
+                        <li><a href="{% url 'change_password' %}" class="btn btn-primary">Cambiar Contraseña</a></li>
+                        <li><a href="{% url 'change_schedule' %}" class="btn btn-primary">Cambiar Horario de Empleados</a></li>
                     </ul>
                 </div>
             </div>
         {% endif %}
-
         <!-- Opciones para Gerentes -->
         {% if es_gerente %}
             <div class="card mb-4">
@@ -35,8 +40,13 @@
                 </div>
                 <div class="card-body">
                     <ul>
-                        <li><a href="{% url 'create_employee' %}" class="btn btn-primary">Gestión de Empleados</a></li>
+                        <li><a href="{% url 'list_users' %}" class="btn btn-primary">Lista de Usuarios</a></li>
+                        <li><a href="{% url 'create_employee' %}" class="btn btn-primary">Crear Empleados</a></li>
                         <li><a href="{% url 'lista_justificantes' %}" class="btn btn-info">Ver Justificantes</a></li>
+                        <li><a href="{% url 'index_photos' %}" class="btn btn-primary">Indexar Fotos</a></li>
+                        <li><a href="{% url 'edit_employee_profile' %}" class="btn btn-primary">Editar Perfil</a></li>
+                        <li><a href="{% url 'change_password' %}" class="btn btn-primary">Cambiar Contraseña</a></li>
+                        <li><a href="{% url 'change_schedule' %}" class="btn btn-primary">Cambiar Horario de Empleados</a></li>
                     </ul>
                 </div>
             </div>
