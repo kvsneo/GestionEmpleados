@@ -140,4 +140,14 @@ MEDIA_ROOT2 = os.path.join(BASE_DIR, 'justificantes')
 #Rediccionamiento de Login
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'  # Dónde redirigir después de iniciar sesión
-LOGOUT_REDIRECT_URL = '/login/'    # Dónde redirigir después de cerrar sesión
+LOGOUT_REDIRECT_URL = 'login'    # Dónde redirigir después de cerrar sesión
+
+
+#Configuracion de Correo
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'srko220308@upemor.edu.mx'
+EMAIL_HOST_PASSWORD = 'pffu lnrl kwpl iijj'
+DEFAULT_FROM_EMAIL = 'srko220308@upemor.edu.mx'

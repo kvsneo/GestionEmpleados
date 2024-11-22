@@ -168,6 +168,14 @@ class ScheduleForm(forms.Form):
         ('11pm-7am', '11pm-7am')
     ]
 
-    employee = forms.ModelChoiceField(queryset=User.objects.filter(role='employee'), label='Empleado')
+    employee = forms.ModelChoiceField(queryset=User.objects.none(), label='Empleado')
     month = forms.ChoiceField(choices=MONTH_CHOICES, label='Mes')
     schedule = forms.ChoiceField(choices=SCHEDULE_CHOICES, label='Horario')
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super(ScheduleForm, self).__init__(*args, **kwargs)
+        if user and user.is_manager():
+            self.fields['employee'].queryset = CustomUser.objects.filter(manager=user)
+        elif user and user.is_admin():
+            self.fields['employee'].queryset = CustomUser.objects.filter(role='employee')

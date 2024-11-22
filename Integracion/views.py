@@ -526,11 +526,12 @@ def change_password(request):
 
 from django.shortcuts import render, redirect
 from .forms import ScheduleForm
-from .models import EmployeeSchedule
+from .models import EmployeeSchedule, CustomUser
 
+@login_required
 def change_schedule(request):
     if request.method == 'POST':
-        form = ScheduleForm(request.POST)
+        form = ScheduleForm(request.POST, user=request.user)
         if form.is_valid():
             employee = form.cleaned_data['employee']
             month = form.cleaned_data['month']
@@ -552,7 +553,7 @@ def change_schedule(request):
             )
             return redirect('dashboard')
     else:
-        form = ScheduleForm()
+        form = ScheduleForm(user=request.user)
 
     return render(request, 'change_schedule.html', {'form': form})
 
