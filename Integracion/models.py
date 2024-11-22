@@ -48,6 +48,7 @@ class Face(models.Model):
 class MatchInfo(models.Model):
     name = models.CharField(max_length=255)
     match_time = models.DateTimeField()
+    estado = models.CharField(max_length=2, default='A')  # Asistencia por defecto
 
     class Meta:
         db_table = 'match_info'
