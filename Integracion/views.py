@@ -19,9 +19,8 @@ from logging_config import logger
 from .Reconocimineto.IndexarBaseUsuarios import cargar_img_conocidad_directorio
 from .admin import admin_required, admin_or_manager_required
 from .forms import AdminCreationForm, ManagerCreationForm, EmployeeCreationForm, UserEditForm, ReassignManagerForm, \
-    JustificanteForm, EmployeeProfileForm
-from .forms import EmployeePasswordChangeForm
-from .models import CustomUser, Justificante, JustificanteArchivo
+    JustificanteForm, EmployeeProfileForm, EmployeePasswordChangeForm, ScheduleForm
+from .models import EmployeeSchedule, CustomUser, Justificante, JustificanteArchivo
 
 
 # Create your views here.
@@ -227,14 +226,20 @@ def save_image(request):
 def index_photos(request):
     if request.method == 'POST':
         if cache.get('is_indexing'):
+            logger.info('Indexing is already in progress.')
+            logger.info('Indexing flag create.')
             return JsonResponse({'status': 'error', 'message': 'Indexing is already in progress.'})
 
         cache.set('is_indexing', True, timeout=None)  # Set the flag to indicate indexing is in progress
         try:
             messages = cargar_img_conocidad_directorio('UsuariosImagenes')
             return JsonResponse({'status': 'success', 'message': 'Indexing completed', 'messages': messages})
+        except Exception as e:
+            logger.info(f'Error during indexing: {e}')
+            return JsonResponse({'status': 'error', 'message': 'An error occurred during indexing.'})
         finally:
             cache.delete('is_indexing')  # Clear the flag after indexing is done
+            logger.info('Indexing flag cleared.')
     else:
         users = CustomUser.objects.all()
         return render(request, 'indexar_base.html', {'users': users})
@@ -523,10 +528,6 @@ def change_password(request):
         form = EmployeePasswordChangeForm(request.user)
     return render(request, 'change_password.html', {'form': form})
 
-
-from django.shortcuts import render, redirect
-from .forms import ScheduleForm
-from .models import EmployeeSchedule, CustomUser
 
 @login_required
 def change_schedule(request):

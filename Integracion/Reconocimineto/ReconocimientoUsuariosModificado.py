@@ -37,7 +37,7 @@ def comparar_rostros(known_faces, known_names, captured_image_path):
             conn = mysql.connector.connect(host='localhost', user='root', password='', database='basegestionempleados')
             c = conn.cursor()
             match_time = datetime.datetime.now()
-            c.execute("INSERT INTO MatchInfo (name, match_time) VALUES (%s, %s)", (name, match_time))
+            c.execute("INSERT INTO match_info (name, match_time) VALUES (%s, %s)", (name, match_time))
             conn.commit()
             conn.close()
             return name
