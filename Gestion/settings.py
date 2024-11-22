@@ -11,9 +11,12 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR1 = Path(__file__).resolve().parent.parent
+BASE_DIR2 = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -127,11 +130,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'Integracion.CustomUser'
 
 # Rutas para Almacenamineto de Imagenes de Usuarios
-ImgUsuarios_dir = BASE_DIR / '/ImgUsuarios/'
-#MEDIA_ROOT1 = os.path.join(BASE_DIR1, 'ImgUsuarios')
+MEDIA_URL1 = '/UsuariosImagenes/'
+MEDIA_ROOT1 = os.path.join(BASE_DIR, 'UsuariosImagenes')
+
 #Ruta para Almacenar Justificantes
-Justificantes_dir = '/Justificantes/'
-#MEDIA_ROOT2 = os.path.join(BASE_DIR2, 'Justificantes')
+MEDIA_URL2 = '/justificantes/'
+MEDIA_ROOT2 = os.path.join(BASE_DIR, 'justificantes')
 
 #Rediccionamiento de Login
 LOGIN_URL = '/login/'
