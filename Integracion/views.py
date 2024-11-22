@@ -5,12 +5,12 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import logout
+from django.contrib.auth import logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.http import JsonResponse
-from django.shortcuts import redirect, get_object_or_404, render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -19,11 +19,9 @@ from logging_config import logger
 from .Reconocimineto.IndexarBaseUsuarios import cargar_img_conocidad_directorio
 from .admin import admin_required, admin_or_manager_required
 from .forms import AdminCreationForm, ManagerCreationForm, EmployeeCreationForm, UserEditForm, ReassignManagerForm, \
-    JustificanteForm
+    JustificanteForm, EmployeeProfileForm
+from .forms import EmployeePasswordChangeForm
 from .models import CustomUser, Justificante, JustificanteArchivo
-
-
-# Integracion/views.py
 
 
 # Create your views here.
@@ -476,3 +474,51 @@ def editar_justificante(request, justificante_id):
         'archivos_pdf': archivos_pdf,
         'archivos_documento': archivos_documento,
     })
+
+
+@login_required
+def edit_employee_profile(request):
+    if request.method == 'POST':
+        form = EmployeeProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Perfil actualizado exitosamente.')
+            return redirect('dashboard')
+    else:
+        form = EmployeeProfileForm(instance=request.user)
+
+    return render(request, 'edit_employee_profile.html', {'form': form})
+
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = EmployeePasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            old_password = form.cleaned_data.get('old_password')
+            new_password1 = form.cleaned_data.get('new_password1')
+
+            # Verify if the new password is the same as the old password
+            if old_password == new_password1:
+                messages.error(request, 'The new password cannot be the same as the old password.')
+                return render(request, 'change_password.html', {'form': form})
+
+            user = form.save()
+            update_session_auth_hash(request, user)  # Keep the session active after changing the password
+
+            # Send an email with the new password
+            send_mail(
+                'Your password has been changed',
+                f'Hello {user.username},\n\nYour password has been successfully changed. Your new password is: {new_password1}\n\nBest regards,\nThe team',
+                'your_email@example.com',
+                [user.email],
+                fail_silently=False,
+            )
+
+            messages.success(request, 'Your password has been successfully updated.')
+            return redirect('dashboard')
+        else:
+            messages.error(request, 'Please correct the errors in the form.')
+    else:
+        form = EmployeePasswordChangeForm(request.user)
+    return render(request, 'change_password.html', {'form': form})

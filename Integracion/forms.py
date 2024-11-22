@@ -1,7 +1,7 @@
 from datetime import timedelta, timezone
 
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
 from django.utils import timezone
 
 from logging_config import logger
@@ -135,3 +135,15 @@ class JustificanteForm(forms.ModelForm):
             raise forms.ValidationError('La fecha no puede ser anterior a los últimos 15 días.')
 
         return fecha
+
+
+class EmployeeProfileForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'middle_name', 'last_name', 'email']
+
+
+class EmployeePasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))

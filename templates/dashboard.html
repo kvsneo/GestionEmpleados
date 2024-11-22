@@ -1,9 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="container mt-4">
+        <div class="container mt-4">
         <h1 class="mb-4">Bienvenido, {{ user.username }}</h1>
-
+        {% if messages %}
+            <div>
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
         <!-- Opciones para Administradores -->
         {% if es_admin %}
             <div class="card mb-4">
@@ -12,7 +20,8 @@
                 </div>
                 <div class="card-body">
                     <ul>
-                        <li><a href="{% url 'create_manager' %}" class="btn btn-primary">Gestión de Usuarios Gerentes</a></li>
+                        <li><a href="{% url 'create_manager' %}" class="btn btn-primary">Gestión de Usuarios
+                            Gerentes</a></li>
                     </ul>
                 </div>
             </div>
@@ -43,6 +52,8 @@
                     <ul>
                         <li><a href="{% url 'subir_justificante' %}" class="btn btn-primary">Subir Justificante</a></li>
                         <li><a href="{% url 'lista_justificantes' %}" class="btn btn-info">Ver Justificantes</a></li>
+                        <li><a href="{% url 'edit_employee_profile' %}" class="btn btn-primary">Editar Perfil</a></li>
+                        <li><a href="{% url 'change_password' %}" class="btn btn-primary">Cambiar Contraseña</a></li>
                     </ul>
                 </div>
             </div>

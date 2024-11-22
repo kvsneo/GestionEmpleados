@@ -23,7 +23,7 @@ from django.urls import path
 from Integracion import views
 
 urlpatterns = [
-    path('',views.dashboard, name='home'),
+    path('', views.dashboard, name='home'),
     path('admin/', admin.site.urls),
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('logout/', views.custom_logout, name='logout'),
@@ -43,6 +43,10 @@ urlpatterns = [
     path('lista_justificantes/', views.lista_justificantes, name='lista_justificantes'),
     path('editar_justificante/<int:justificante_id>/', views.editar_justificante, name='editar_justificante'),
     path('dashboard/', views.dashboard, name='dashboard'),
+
+    path('edit_employee_profile/', views.edit_employee_profile, name='edit_employee_profile'),
+
+    path('change_password/', views.change_password, name='change_password'),
 
 ]
 if settings.DEBUG:
