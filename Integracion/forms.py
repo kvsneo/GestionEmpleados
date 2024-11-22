@@ -49,6 +49,7 @@ class EmployeeCreationForm(UserCreationForm):
             self.fields['manager'].initial = user
             self.fields['manager'].queryset = CustomUser.objects.filter(role='manager', id=user.id)
 
+
 class UserEditForm(forms.ModelForm):
     class Meta:
         model = CustomUser

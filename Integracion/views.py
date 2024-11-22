@@ -1,8 +1,15 @@
+import base64
+import json
+import os
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from logging_config import logger
@@ -103,6 +110,7 @@ def create_employee(request):
             form.fields['manager'].widget.attrs['style'] = 'background-color: #f0f0f0; color: #888;'
     return render(request, 'create_employee.html', {'form': form})
 
+
 @login_required
 @admin_or_manager_required
 def list_users(request):
@@ -182,12 +190,6 @@ def delete_user(request, user_id):
 def capturarimagenes(request):
     return render(request, 'capturarImagenes.html')
 
-import json
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-import base64
-import os
-from django.conf import settings
 
 @csrf_exempt
 def save_image(request):
@@ -213,3 +215,30 @@ def save_image(request):
 
         return JsonResponse({'status': 'success', 'image_path': image_path})
     return JsonResponse({'status': 'error'}, status=400)
+
+
+
+
+# Integracion/views.py
+
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.core.cache import cache
+from .models import CustomUser
+from .Reconocimineto.IndexarBaseUsuarios import cargar_img_conocidad_directorio
+
+@login_required
+def index_photos(request):
+    if request.method == 'POST':
+        if cache.get('is_indexing'):
+            return JsonResponse({'status': 'error', 'message': 'Indexing is already in progress.'})
+
+        cache.set('is_indexing', True, timeout=None)  # Set the flag to indicate indexing is in progress
+        try:
+            messages = cargar_img_conocidad_directorio('UsuariosImagenes')
+            return JsonResponse({'status': 'success', 'message': 'Indexing completed', 'messages': messages})
+        finally:
+            cache.delete('is_indexing')  # Clear the flag after indexing is done
+    else:
+        users = CustomUser.objects.all()
+        return render(request, 'indexar_base.html', {'users': users})

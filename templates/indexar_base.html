@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Indexar Fotografías</title>
+</head>
+<body>
+    <h1>Indexar Fotografías de Usuarios</h1>
+    <form method="post" id="indexForm">
+        {% csrf_token %}
+        <button type="submit" id="indexButton">Indexar Fotografías</button>
+    </form>
+    <h2>Usuarios Indexados</h2>
+    <ul>
+        {% for user in users %}
+            <li>{{ user.username }}</li>
+        {% endfor %}
+    </ul>
+    <div id="statusMessage"></div>
+    <div id="consoleMessages"></div>
+    <div id="loadingMessage" style="display: none;">Espera, se están indexando nuevas imágenes...</div>
+    <script>
+        let isIndexing = false;
+
+        window.addEventListener('beforeunload', function (event) {
+            if (isIndexing) {
+                event.preventDefault();
+                event.returnValue = 'Estas seguro? esto podría perjudicar el reconocimiento';
+            }
+        });
+
+        document.getElementById('indexForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            if (localStorage.getItem('isIndexing') === 'true') {
+                alert('Indexing is already in progress.');
+                return;
+            }
+
+            const indexButton = document.getElementById('indexButton');
+            const loadingMessage = document.getElementById('loadingMessage');
+            indexButton.disabled = true; // Desactivar el botón
+            loadingMessage.style.display = 'block'; // Mostrar el mensaje de carga
+            isIndexing = true; // Indicar que la indexación está en curso
+            localStorage.setItem('isIndexing', 'true'); // Guardar el estado en localStorage
+
+            fetch("{% url 'index_photos' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('statusMessage').innerText = data.message;
+                const consoleMessages = document.getElementById('consoleMessages');
+                consoleMessages.innerHTML = '';
+                data.messages.forEach(msg => {
+                    const p = document.createElement('p');
+                    p.innerText = msg;
+                    consoleMessages.appendChild(p);
+                });
+                indexButton.disabled = false; // Activar el botón nuevamente
+                loadingMessage.style.display = 'none'; // Ocultar el mensaje de carga
+                isIndexing = false; // Indicar que la indexación ha finalizado
+                localStorage.setItem('isIndexing', 'false'); // Actualizar el estado en localStorage
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                indexButton.disabled = false; // Activar el botón en caso de error
+                loadingMessage.style.display = 'none'; // Ocultar el mensaje de carga
+                isIndexing = false; // Indicar que la indexación ha finalizado
+                localStorage.setItem('isIndexing', 'false'); // Actualizar el estado en localStorage
+            });
+        });
+    </script>
+</body>
+</html>
