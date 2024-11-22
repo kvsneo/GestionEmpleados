@@ -32,4 +32,7 @@ urlpatterns = [
     path('list_users/', views.list_users, name='list_users'),
     path('edit_user/<int:user_id>/', views.edit_user, name='edit_user'),
     path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),
+
+    path('capturarimagenes/', views.capturarimagenes, name='capturarimagenes'),
+path('save_image/', views.save_image, name='save_image'),
 ]

@@ -1,15 +1,14 @@
+from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods
-from django.contrib import messages
-from django.core.mail import send_mail
 
-
+from logging_config import logger
 from .admin import admin_required, admin_or_manager_required
 from .forms import AdminCreationForm, ManagerCreationForm, EmployeeCreationForm, UserEditForm, ReassignManagerForm
 from .models import CustomUser
-from logging_config import logger
 
 
 # Create your views here.
@@ -178,3 +177,39 @@ def delete_user(request, user_id):
         form = ReassignManagerForm()
 
     return render(request, 'confirm_delete.html', {'user': user, 'form': form})
+
+
+def capturarimagenes(request):
+    return render(request, 'capturarImagenes.html')
+
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import base64
+import os
+from django.conf import settings
+
+@csrf_exempt
+def save_image(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        image_data = data['image'].split(',')[1]
+        capture_count = data['captureCount']
+        image_binary = base64.b64decode(image_data)
+
+        # Define the base path and user directory
+        base_path = os.path.join(settings.MEDIA_ROOT, 'UsuariosImagenes', request.user.username)
+        if not os.path.exists(base_path):
+            os.makedirs(base_path)
+
+        # Find the next available filename
+        image_path = os.path.join(base_path, f'image_{capture_count}.png')
+        while os.path.exists(image_path):
+            capture_count += 1
+            image_path = os.path.join(base_path, f'image_{capture_count}.png')
+
+        with open(image_path, 'wb') as f:
+            f.write(image_binary)
+
+        return JsonResponse({'status': 'success', 'image_path': image_path})
+    return JsonResponse({'status': 'error'}, status=400)

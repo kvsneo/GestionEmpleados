@@ -1,9 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 
-from .models import CustomUser
 from logging_config import logger
-
+from .models import CustomUser
 
 
 class AdminCreationForm(UserCreationForm):

@@ -33,3 +33,19 @@ class CustomUser(AbstractUser):
 
     def is_employee(self):
         return self.role == 'employee'
+
+
+class Face(models.Model):
+    name = models.CharField(max_length=255)
+    encoding = models.BinaryField()
+    photo_count = models.IntegerField()
+
+    class Meta:
+        db_table = 'faces'
+
+class MatchInfo(models.Model):
+    name = models.CharField(max_length=255)
+    match_time = models.DateTimeField()
+
+    class Meta:
+        db_table = 'match_info'

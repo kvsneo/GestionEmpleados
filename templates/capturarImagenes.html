@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Capturar Fotografía</title>
+</head>
+<body>
+    <h1>Capturar Fotografía</h1>
+    <select id="cameraSelect"></select>
+    <video id="video" width="640" height="480" autoplay></video>
+    <button id="startCapture">Iniciar Captura</button>
+    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+    <img id="photo" alt="La foto capturada aparecerá aquí">
+    <p id="countdown"></p>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const photo = document.getElementById('photo');
+        const startCaptureButton = document.getElementById('startCapture');
+        const cameraSelect = document.getElementById('cameraSelect');
+        const countdown = document.getElementById('countdown');
+        let captureCount = 0;
+
+        // Enumerar dispositivos de video
+        navigator.mediaDevices.enumerateDevices()
+            .then(devices => {
+                devices.forEach(device => {
+                    if (device.kind === 'videoinput') {
+                        const option = document.createElement('option');
+                        option.value = device.deviceId;
+                        option.text = device.label || `Camera ${cameraSelect.length + 1}`;
+                        cameraSelect.appendChild(option);
+                    }
+                });
+            })
+            .catch(err => {
+                console.error("Error al enumerar dispositivos: ", err);
+            });
+
+        // Cambiar la cámara seleccionada
+        cameraSelect.addEventListener('change', () => {
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+            const deviceId = cameraSelect.value;
+            navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: deviceId } } })
+                .then(stream => {
+                    video.srcObject = stream;
+                })
+                .catch(err => {
+                    console.error("Error al acceder a la cámara: ", err);
+                });
+        });
+
+        // Acceder a la cámara por defecto
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("Error al acceder a la cámara: ", err);
+            });
+
+        // Iniciar la captura de imágenes
+        startCaptureButton.addEventListener('click', () => {
+            captureCount = 0;
+            captureImages();
+        });
+
+        function captureImages() {
+            if (captureCount < 5) {
+                let countdownValue = 3;
+                countdown.innerText = countdownValue;
+                const countdownInterval = setInterval(() => {
+                    countdownValue--;
+                    countdown.innerText = countdownValue;
+                    if (countdownValue === 0) {
+                        clearInterval(countdownInterval);
+                        captureImage();
+                    }
+                }, 1000);
+            }
+        }
+
+        function captureImage() {
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const data = canvas.toDataURL('image/png');
+        photo.setAttribute('src', data);
+        photo.style.display = 'block';
+        captureCount++;
+        sendImageToServer(data, captureCount);
+        if (captureCount < 5) {
+            setTimeout(captureImages, 1000);
+        } else {
+            countdown.innerText = 'Captura completada';
+        }
+    }
+
+         function sendImageToServer(data, captureCount) {
+        fetch('/save_image/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ image: data, captureCount: captureCount })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Imagen guardada:', data);
+        })
+        .catch(error => {
+            console.error('Error al guardar la imagen:', error);
+        });
+    }
+    </script>
+</body>
+</html>
