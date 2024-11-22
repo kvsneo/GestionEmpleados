@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -50,3 +51,26 @@ class MatchInfo(models.Model):
 
     class Meta:
         db_table = 'match_info'
+
+
+class Justificante(models.Model):
+    motivo = models.CharField(max_length=255)
+    fecha = models.DateField()
+    estado = models.CharField(max_length=50, default="Pendiente")  # Valor por defecto
+    empleado = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='justificantes',
+        limit_choices_to={'role': 'employee'}
+    )
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='justificantes_subidos'
+    )
+
+
+class JustificanteArchivo(models.Model):
+    justificante = models.ForeignKey(Justificante, on_delete=models.CASCADE, related_name='archivos')
+    archivo = models.FileField(upload_to='justificantes/')
+    tipo = models.CharField(max_length=50)  # Puede ser 'imagen', 'pdf' o 'documento'

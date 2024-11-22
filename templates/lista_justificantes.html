@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Justificantes de Empleados</h2>
+
+<!-- Tabla para Administradores y Gerentes (Justificantes Pendientes) -->
+{% if request.user.is_admin or request.user.is_manager %}
+    <h3>Justificantes Pendientes</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Motivo</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Archivos</th>
+                    <th>Empleado</th>
+                    <th>Aceptar</th>
+                    <th>Rechazar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for justificante in justificantes %}
+                    {% if justificante.estado == 'Pendiente' %}
+                        <tr>
+                            <td>{{ justificante.motivo }}</td>
+                            <td>{{ justificante.fecha|date:"d M, Y" }}</td>
+                            <td>
+                                <span class="badge bg-warning text-dark">Pendiente</span>
+                            </td>
+                            <td>
+                                {% for archivo in justificante.archivos.all %}
+                                    <a href="{{ archivo.archivo.url }}" target="_blank" class="btn btn-info btn-sm">{{ archivo.tipo }}</a><br>
+                                {% endfor %}
+                            </td>
+                            <td>{{ justificante.empleado.username }}</td>
+                            <td>
+                                <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalAceptar{{ justificante.id }}">
+                                    Aceptar
+                                </button>
+                            </td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalRechazar{{ justificante.id }}">
+                                    Rechazar
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Modal Aceptar -->
+                        <div class="modal fade" id="modalAceptar{{ justificante.id }}" tabindex="-1" aria-labelledby="modalAceptarLabel{{ justificante.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="modalAceptarLabel{{ justificante.id }}">Confirmar Aceptación</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        ¿Estás seguro de aceptar este justificante?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="justificante_id" value="{{ justificante.id }}">
+                                            <input type="hidden" name="nuevo_estado" value="Aceptado">
+                                            <button type="submit" class="btn btn-success">Aceptar</button>
+                                        </form>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Rechazar -->
+                        <div class="modal fade" id="modalRechazar{{ justificante.id }}" tabindex="-1" aria-labelledby="modalRechazarLabel{{ justificante.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="modalRechazarLabel{{ justificante.id }}">Confirmar Rechazo</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        ¿Estás seguro de rechazar este justificante?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="justificante_id" value="{{ justificante.id }}">
+                                            <input type="hidden" name="nuevo_estado" value="Rechazado">
+                                            <button type="submit" class="btn btn-danger">Rechazar</button>
+                                        </form>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+<!-- Tabla para los empleados -->
+{% if request.user.is_employee %}
+    <h3>Mis Justificantes</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Motivo</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Archivos</th>
+                    <th>Editar</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for justificante in justificantes %}
+                    <tr>
+                        <td>{{ justificante.motivo }}</td>
+                        <td>{{ justificante.fecha|date:"d M, Y" }}</td>
+                        <td>
+                            {% if justificante.estado == 'Pendiente' %}
+                                <span class="badge bg-warning text-dark">Pendiente</span>
+                            {% elif justificante.estado == 'Aceptado' %}
+                                <span class="badge bg-success">Aceptado</span>
+                            {% elif justificante.estado == 'Rechazado' %}
+                                <span class="badge bg-danger">Rechazado</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% for archivo in justificante.archivos.all %}
+                                <a href="{{ archivo.archivo.url }}" target="_blank" class="btn btn-info btn-sm">{{ archivo.tipo }}</a><br>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if justificante.estado == 'Pendiente' %}
+                                <a href="{% url 'editar_justificante' justificante.id %}" class="btn btn-warning btn-sm">Editar</a>
+                            {% endif %}
+                        </td>
+                        <td>
+                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ justificante.id }}">
+                                    Eliminar
+                                </button>
+                        </td>
+                    </tr>
+
+                    <!-- Modal Eliminar -->
+                    <div class="modal fade" id="modalEliminar{{ justificante.id }}" tabindex="-1" aria-labelledby="modalEliminarLabel{{ justificante.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalEliminarLabel{{ justificante.id }}">Confirmar Eliminación</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    ¿Estás seguro de eliminar este justificante y todos sus archivos asociados?
+                                </div>
+                                <div class="modal-footer">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="justificante_id" value="{{ justificante.id }}">
+                                        <input type="hidden" name="eliminar_justificante" value="true">
+                                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                                    </form>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+<p class="mt-3"><a href="{% url 'dashboard' %}" class="btn btn-secondary">Ir al Panel </a></p>
+
+{% endblock %}

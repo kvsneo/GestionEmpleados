@@ -37,4 +37,9 @@ urlpatterns = [
 
     path('index_photos/', views.index_photos, name='index_photos'),
 
+    path('subir_justificante/', views.subir_justificante, name='subir_justificante'),
+    path('lista_justificantes/', views.lista_justificantes, name='lista_justificantes'),
+    path('editar_justificante/<int:justificante_id>/', views.editar_justificante, name='editar_justificante'),
+    path('dashboard/', views.dashboard, name='dashboard'),
+
 ]

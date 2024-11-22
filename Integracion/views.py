@@ -1,21 +1,29 @@
 import base64
 import json
 import os
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.http import JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from logging_config import logger
+from .Reconocimineto.IndexarBaseUsuarios import cargar_img_conocidad_directorio
 from .admin import admin_required, admin_or_manager_required
-from .forms import AdminCreationForm, ManagerCreationForm, EmployeeCreationForm, UserEditForm, ReassignManagerForm
-from .models import CustomUser
+from .forms import AdminCreationForm, ManagerCreationForm, EmployeeCreationForm, UserEditForm, ReassignManagerForm, \
+    JustificanteForm
+from .models import CustomUser, Justificante, JustificanteArchivo
+
+
+# Integracion/views.py
 
 
 # Create your views here.
@@ -49,7 +57,7 @@ def create_admin(request):
             user.role = 'admin'
             user.save()
             logger.info(f"Admin created: {user.username} by {request.user.username}")
-            return redirect('admin_dashboard')
+            return redirect('dashboard')
     else:
         form = AdminCreationForm()
     return render(request, 'create_admin.html', {'form': form})
@@ -75,7 +83,7 @@ def create_manager(request):
                 fail_silently=False,
             )
 
-            return redirect('admin_dashboard')
+            return redirect('dashboard')
     else:
         form = ManagerCreationForm()
     return render(request, 'create_manager.html', {'form': form})
@@ -101,7 +109,7 @@ def create_employee(request):
                 fail_silently=False,
             )
 
-            return redirect('admin_dashboard')
+            return redirect('dashboard')
     else:
         form = EmployeeCreationForm(user=request.user)
         # Si el usuario es un manager, desactivamos el campo 'manager'
@@ -217,16 +225,6 @@ def save_image(request):
     return JsonResponse({'status': 'error'}, status=400)
 
 
-
-
-# Integracion/views.py
-
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.core.cache import cache
-from .models import CustomUser
-from .Reconocimineto.IndexarBaseUsuarios import cargar_img_conocidad_directorio
-
 @login_required
 def index_photos(request):
     if request.method == 'POST':
@@ -242,3 +240,239 @@ def index_photos(request):
     else:
         users = CustomUser.objects.all()
         return render(request, 'indexar_base.html', {'users': users})
+
+
+@login_required
+def dashboard(request):
+    # Verificar los roles del usuario
+    es_admin = request.user.is_admin()
+    es_gerente = request.user.is_manager()
+    es_empleado = request.user.is_employee()
+
+    # Puedes crear variables adicionales si necesitas comprobar permisos específicos
+    gestion_usuarios = es_admin  # Solo el admin puede gestionar usuarios
+    reportes_globales = es_admin  # Solo el admin puede generar reportes globales
+    gestion_empleados = es_gerente  # Solo el gerente puede gestionar empleados
+    reportes_area = es_gerente  # Solo el gerente puede generar reportes de área
+    registrar_asistencia = es_empleado  # Solo los empleados pueden registrar su asistencia
+    consultar_estadisticas = es_empleado  # Solo los empleados pueden consultar estadísticas
+
+    # Pasar los datos al contexto
+    context = {
+        'es_admin': es_admin,
+        'es_gerente': es_gerente,
+        'es_empleado': es_empleado,
+        'gestion_usuarios': gestion_usuarios,
+        'reportes_globales': reportes_globales,
+        'gestion_empleados': gestion_empleados,
+        'reportes_area': reportes_area,
+        'registrar_asistencia': registrar_asistencia,
+        'consultar_estadisticas': consultar_estadisticas,
+    }
+
+    return render(request, 'dashboard.html', context)
+
+
+@login_required
+def subir_justificante(request):
+    if request.method == 'POST':
+        form = JustificanteForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Obtener los datos del formulario
+            motivo = form.cleaned_data['motivo']
+            fecha = form.cleaned_data['fecha']
+
+            # Validar el campo 'motivo'
+            if not motivo or motivo == "None":
+                form.add_error('motivo', 'El motivo debe contener más detalles o no debe ser "None".')
+                messages.error(request, 'Por favor corrige los errores en el formulario.')
+                return render(request, 'subir_justificante.html', {'form': form})
+
+            # Obtener la fecha actual
+            fecha_actual = timezone.now().astimezone(timezone.get_current_timezone()).date()
+
+            # Calcular la fecha límite (hace 15 días desde la fecha actual)
+            fecha_limite = fecha_actual - timedelta(days=15)
+
+            # Validaciones de la fecha
+            if fecha < fecha_limite:
+                form.add_error('fecha', 'La fecha no puede ser anterior a los últimos 15 días.')
+            if fecha > fecha_actual:
+                form.add_error('fecha', 'La fecha no puede ser mayor a la fecha actual.')
+
+            # Si hubo errores de validación, no se guarda y se vuelve a mostrar el formulario con los errores
+            if form.errors:
+                messages.error(request, 'Por favor corrige los errores en el formulario.')
+                return render(request, 'subir_justificante.html', {'form': form})
+
+            # Crear la instancia del justificante
+            justificante = Justificante(
+                motivo=motivo,
+                fecha=fecha,
+                empleado=request.user,  # Asigna al usuario actual como empleado
+                usuario=request.user  # Asigna al usuario actual como quien sube
+            )
+            justificante.save()
+
+            # Guardar archivos adjuntos si existen
+            if request.FILES.get('imagen'):
+                JustificanteArchivo.objects.create(justificante=justificante, archivo=request.FILES['imagen'],
+                                                   tipo='imagen')
+            if request.FILES.get('pdf'):
+                JustificanteArchivo.objects.create(justificante=justificante, archivo=request.FILES['pdf'], tipo='pdf')
+            if request.FILES.get('documento'):
+                JustificanteArchivo.objects.create(justificante=justificante, archivo=request.FILES['documento'],
+                                                   tipo='documento')
+
+            # Mensaje de éxito
+            messages.success(request, 'Justificante subido correctamente.')
+
+            # Redirigir al dashboard después de mostrar el mensaje de éxito
+            return render(request, 'subir_justificante.html', {'form': form})
+
+        else:
+            messages.error(request, 'Por favor corrige los errores en el formulario.')
+
+    else:
+        form = JustificanteForm()
+
+    return render(request, 'subir_justificante.html', {'form': form})
+
+
+@login_required
+def lista_justificantes(request):
+    # Filtrar justificantes según el rol del usuario
+    if request.user.role == 'admin':
+        # Los administradores pueden ver todos los justificantes
+        justificantes = Justificante.objects.all()
+    elif request.user.role == 'manager':
+        # Los gerentes solo pueden ver los justificantes de los empleados que tienen asociados
+        justificantes = Justificante.objects.filter(empleado__manager=request.user)
+    elif request.user.role == 'employee':
+        # Los empleados solo pueden ver sus propios justificantes
+        justificantes = Justificante.objects.filter(empleado=request.user)
+    else:
+        messages.error(request, 'No tienes permiso para ver esta página.')
+        return redirect('inicio')
+
+    if request.method == 'POST':
+        justificante_id = request.POST.get('justificante_id')
+
+        # Manejo de eliminación
+        if request.POST.get('eliminar_justificante') == 'true':
+            try:
+                # Los empleados solo pueden eliminar sus propios justificantes
+                justificante = Justificante.objects.get(id=justificante_id, empleado=request.user)
+                justificante.delete()
+                messages.success(request, 'El justificante ha sido eliminado exitosamente.')
+            except Justificante.DoesNotExist:
+                messages.error(request, 'No tienes permiso para eliminar este justificante.')
+            return redirect('lista_justificantes')
+
+        # Manejo de actualización de estado (Aceptar o Rechazar)
+        nuevo_estado = request.POST.get('nuevo_estado')
+        if nuevo_estado in ['Aceptado', 'Rechazado']:
+            try:
+                justificante = Justificante.objects.get(id=justificante_id)
+                # Solo gerentes o administradores pueden cambiar el estado
+                if request.user.role in ['manager', 'admin']:
+                    justificante.estado = nuevo_estado
+                    justificante.save()
+                    messages.success(request, f'El justificante ha sido {nuevo_estado.lower()} exitosamente.')
+                else:
+                    messages.error(request, 'No tienes permiso para realizar esta acción.')
+            except Justificante.DoesNotExist:
+                messages.error(request, 'El justificante no existe.')
+            return redirect('lista_justificantes')
+
+        # Manejo de edición por empleados
+        nuevo_motivo = request.POST.get('nuevo_motivo')
+        nuevo_archivo = request.FILES.get('nuevo_archivo')
+        if nuevo_motivo or nuevo_archivo:
+            try:
+                justificante = Justificante.objects.get(id=justificante_id, empleado=request.user)
+                if justificante.estado == 'Pendiente':
+                    if nuevo_motivo:
+                        justificante.motivo = nuevo_motivo
+                    if nuevo_archivo:
+                        JustificanteArchivo.objects.create(
+                            justificante=justificante,
+                            archivo=nuevo_archivo,
+                            tipo='nuevo'  # Puedes adaptar el tipo si es necesario
+                        )
+                    justificante.save()
+                    messages.success(request, 'El justificante ha sido actualizado.')
+                else:
+                    messages.error(request, 'Solo puedes editar justificantes en estado "Pendiente".')
+            except Justificante.DoesNotExist:
+                messages.error(request, 'No tienes permiso para editar este justificante.')
+            return redirect('lista_justificantes')
+
+    return render(request, 'lista_justificantes.html', {'justificantes': justificantes})
+
+
+@login_required
+def editar_justificante(request, justificante_id):
+    justificante = get_object_or_404(Justificante, id=justificante_id)
+
+    # Verifica si el usuario tiene el rol adecuado y si el estado es "Pendiente"
+    if request.user != justificante.usuario and not request.user.is_manager():
+        messages.error(request, 'No tienes permiso para editar este justificante.')
+        return redirect('lista_justificantes')
+
+    if justificante.estado != 'Pendiente':
+        messages.error(request, 'No puedes editar un justificante que no está en estado "Pendiente".')
+        return redirect('lista_justificantes')
+
+    if request.method == 'POST':
+        form = JustificanteForm(request.POST, request.FILES, instance=justificante)
+        if form.is_valid():
+            form.save()
+
+            # Procesar archivos
+            if 'imagen' in request.FILES:
+                if justificante.archivos.filter(tipo='imagen').exists():
+                    justificante.archivos.filter(tipo='imagen').delete()
+                JustificanteArchivo.objects.create(
+                    justificante=justificante,
+                    archivo=request.FILES['imagen'],
+                    tipo='imagen'
+                )
+
+            if 'pdf' in request.FILES:
+                if justificante.archivos.filter(tipo='pdf').exists():
+                    justificante.archivos.filter(tipo='pdf').delete()
+                JustificanteArchivo.objects.create(
+                    justificante=justificante,
+                    archivo=request.FILES['pdf'],
+                    tipo='pdf'
+                )
+
+            if 'documento' in request.FILES:
+                if justificante.archivos.filter(tipo='documento').exists():
+                    justificante.archivos.filter(tipo='documento').delete()
+                JustificanteArchivo.objects.create(
+                    justificante=justificante,
+                    archivo=request.FILES['documento'],
+                    tipo='documento'
+                )
+
+            # Agregar mensaje de éxito
+            messages.success(request, 'Justificante actualizado exitosamente.')
+            return redirect('editar_justificante',
+                            justificante_id=justificante.id)  # Esto recarga la página para mostrar el mensaje
+
+    else:
+        form = JustificanteForm(instance=justificante)
+
+    # Pasamos los archivos asociados al justificante
+    archivos_imagen = justificante.archivos.filter(tipo='imagen')
+    archivos_pdf = justificante.archivos.filter(tipo='pdf')
+    archivos_documento = justificante.archivos.filter(tipo='documento')
+
+    return render(request, 'editar_justificante.html', {
+        'form': form,
+        'archivos_imagen': archivos_imagen,
+        'archivos_pdf': archivos_pdf,
+        'archivos_documento': archivos_documento,
+    })

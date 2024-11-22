@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1 class="mb-4">Bienvenido, {{ user.username }}</h1>
+
+        <!-- Opciones para Administradores -->
+        {% if es_admin %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>Opciones de Administrador</h2>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><a href="{% url 'create_manager' %}" class="btn btn-primary">Gestión de Usuarios Gerentes</a></li>
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Opciones para Gerentes -->
+        {% if es_gerente %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>Opciones de Gerente</h2>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><a href="{% url 'create_employee' %}" class="btn btn-primary">Gestión de Empleados</a></li>
+                        <li><a href="{% url 'lista_justificantes' %}" class="btn btn-info">Ver Justificantes</a></li>
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Opciones para Empleados -->
+        {% if es_empleado %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>Opciones de Empleado</h2>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><a href="{% url 'subir_justificante' %}" class="btn btn-primary">Subir Justificante</a></li>
+                        <li><a href="{% url 'lista_justificantes' %}" class="btn btn-info">Ver Justificantes</a></li>
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
