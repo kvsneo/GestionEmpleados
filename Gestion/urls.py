@@ -50,11 +50,6 @@ urlpatterns = [
 
     path('change_schedule/', views.change_schedule, name='change_schedule'),
 
-    path('reconocimiento_facial/', views.reconocimiento_facial, name='reconocimiento_facial'),
-    path('reconocer_usuario/', views.reconocer_usuario, name='reconocer_usuario'),
-
-    path('ReconocimientoUsuarios/', views.reconocimineto_usuarios, name='ReconocimientoUsuarios'),
-
     path('BuscarImagenes/', views.buscar_imagenes, name='BuscarImagenes'),
     path('EliminarImagen/<str:nombre_usuario>/<str:nombre_imagen>/', views.eliminar_imagen,
          name='EliminarImagen'),

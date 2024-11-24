@@ -9,8 +9,9 @@ from django.contrib.auth import logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.http import JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -21,6 +22,8 @@ from .admin import admin_required, admin_or_manager_required
 from .forms import AdminCreationForm, ManagerCreationForm, EmployeeCreationForm, UserEditForm, ReassignManagerForm, \
     JustificanteForm, EmployeeProfileForm, EmployeePasswordChangeForm, ScheduleForm
 from .models import EmployeeSchedule, CustomUser, Justificante, JustificanteArchivo
+
+BASE_DIR1 = 'UsuariosImagenes'
 
 
 # Create your views here.
@@ -558,3 +561,27 @@ def change_schedule(request):
 
     return render(request, 'change_schedule.html', {'form': form})
 
+
+def buscar_imagenes(request):
+    nombre_usuario = request.user.username
+    ruta_usuario = os.path.join(settings.MEDIA_ROOT1, nombre_usuario)
+
+    if os.path.exists(ruta_usuario) and os.path.isdir(ruta_usuario):
+        imagenes = []
+        for contador, archivo in enumerate(os.listdir(ruta_usuario), start=1):
+            if archivo.lower().endswith(('.png', '.jpg', '.jpeg')):
+                imagenes.append(
+                    {'numero': contador, 'nombre': archivo, 'ruta': f'{settings.MEDIA_URL1}{nombre_usuario}/{archivo}'})
+
+        return render(request, 'mostrar_imagenes.html', {'imagenes': imagenes, 'nombre_usuario': nombre_usuario})
+    else:
+        return render(request, 'error.html', {'mensaje': 'El subdirectorio no existe o no contiene imágenes.'})
+
+
+def eliminar_imagen(request, nombre_usuario, nombre_imagen):
+    if request.method == 'POST':
+        ruta_imagen = os.path.join(BASE_DIR1, nombre_usuario, nombre_imagen)
+        if os.path.exists(ruta_imagen):
+            os.remove(ruta_imagen)
+            return HttpResponseRedirect(reverse('BuscarImagenes'))
+    return render(request, 'error.html', {'mensaje': 'No se pudo eliminar la imagen.'})

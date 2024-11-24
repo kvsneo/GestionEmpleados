@@ -46,7 +46,7 @@ class Face(models.Model):
 
 
 class MatchInfo(models.Model):
-    name = models.CharField(max_length=255)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     match_time = models.DateTimeField()
     estado = models.CharField(max_length=2, default='A')  # Asistencia por defecto
 
@@ -75,8 +75,6 @@ class JustificanteArchivo(models.Model):
     justificante = models.ForeignKey(Justificante, on_delete=models.CASCADE, related_name='archivos')
     archivo = models.FileField(upload_to='justificantes/')
     tipo = models.CharField(max_length=50)  # Puede ser 'imagen', 'pdf' o 'documento'
-
-
 
 
 class EmployeeSchedule(models.Model):
