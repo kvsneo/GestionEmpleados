@@ -5,6 +5,14 @@
 {% block content %}
     <h1>Lista de Usuarios</h1>
 
+    {% if messages %}
+        <div class="alert alert-danger">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
     {% if is_admin %}
         <h2 class="mt-4">Administradores</h2>
         {% if administradores %}

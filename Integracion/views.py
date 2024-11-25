@@ -7,9 +7,7 @@ from django.contrib.auth import logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -646,7 +644,8 @@ def eliminar_imagen(request, nombre_usuario, nombre_imagen):
     imagenes = [archivo for archivo in os.listdir(ruta_usuario) if archivo.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
     if len(imagenes) <= 5:
-        return render(request, 'error.html', {'message': 'No se puede eliminar la imagen. Debe tener al menos 5 imágenes.'})
+        return render(request, 'error.html',
+                      {'message': 'No se puede eliminar la imagen. Debe tener al menos 5 imágenes.'})
 
     if request.method == 'POST':
         ruta_imagen = os.path.join(ruta_usuario, nombre_imagen)
@@ -824,9 +823,6 @@ def obtener_rostros_conocidos(db_name='basegestionempleados'):
         known_names.append(name)
     conn.close()
     return known_faces, known_names
-
-
-
 
 
 def comparar_rostros(known_faces, known_names, captured_image_path):

@@ -1,4 +1,4 @@
-from datetime import time, timezone
+from datetime import timezone
 
 from django import forms
 from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
@@ -100,6 +100,8 @@ class ReassignManagerForm(forms.Form):
         new_manager = self.cleaned_data['new_manager']
         logger.info(f"Manager reassigned: {user.username} to {new_manager.username}")
         return new_manager
+
+
 from datetime import timedelta
 
 
@@ -194,10 +196,10 @@ User = get_user_model()
 
 class ScheduleForm(forms.Form):
     MONTH_CHOICES = [
-        ('January', 'January'), ('February', 'February'), ('March', 'March'),
-        ('April', 'April'), ('May', 'May'), ('June', 'June'),
-        ('July', 'July'), ('August', 'August'), ('September', 'September'),
-        ('October', 'October'), ('November', 'November'), ('December', 'December')
+        ('0000-01-01', 'January'), ('0000-02-01', 'February'), ('0000-03-01', 'March'),
+        ('0000-04-01', 'April'), ('0000-05-01', 'May'), ('0000-06-01', 'June'),
+        ('0000-07-01', 'July'), ('0000-08-01', 'August'), ('0000-09-01', 'September'),
+        ('0000-10-01', 'October'), ('0000-11-01', 'November'), ('0000-12-01', 'December')
     ]
 
     SCHEDULE_CHOICES = [
@@ -221,6 +223,7 @@ class ScheduleForm(forms.Form):
 
 class PasswordResetRequestForm(forms.Form):
     email = forms.EmailField(label="Email", max_length=254)
+
 
 class PasswordResetVerifyForm(forms.Form):
     email = forms.EmailField(label="Email", max_length=254)

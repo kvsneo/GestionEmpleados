@@ -69,6 +69,7 @@ class Justificante(models.Model):
             asis.status = 'J'
             asis.save()
 
+
 class asistencia(models.Model):
     employee = models.CharField(max_length=150)
     date = models.DateField()
@@ -77,6 +78,7 @@ class asistencia(models.Model):
 
     def __str__(self):
         return f"{self.employee} - {self.date} - {self.status}"
+
 
 class JustificanteArchivo(models.Model):
     justificante = models.ForeignKey(Justificante, on_delete=models.CASCADE, related_name='archivos')
@@ -99,7 +101,9 @@ class EmployeeSchedule(models.Model):
 from django.contrib.auth.models import User
 
 
-class match_info(models.Model):
+class MatchInfo(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
     match_time = models.TimeField()
+    class Meta:
+        db_table = 'match_info'
