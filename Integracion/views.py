@@ -640,20 +640,20 @@ def buscar_imagenes(request):
         return render(request, 'error.html', {'mensaje': 'El subdirectorio no existe o no contiene imágenes.'})
 
 
+@login_required
 def eliminar_imagen(request, nombre_usuario, nombre_imagen):
-    ruta_usuario = os.path.join(BASE_DIR1, nombre_usuario)
+    ruta_usuario = os.path.join(settings.MEDIA_ROOT, 'UsuariosImagenes', nombre_usuario)
     imagenes = [archivo for archivo in os.listdir(ruta_usuario) if archivo.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
     if len(imagenes) <= 5:
-        return render(request, 'error.html',
-                      {'mensaje': 'No se puede eliminar la imagen. Debe tener al menos 5 imágenes.'})
+        return render(request, 'error.html', {'message': 'No se puede eliminar la imagen. Debe tener al menos 5 imágenes.'})
 
     if request.method == 'POST':
         ruta_imagen = os.path.join(ruta_usuario, nombre_imagen)
         if os.path.exists(ruta_imagen):
             os.remove(ruta_imagen)
-            return HttpResponseRedirect(reverse('BuscarImagenes'))
-    return render(request, 'error.html', {'mensaje': 'No se pudo eliminar la imagen.'})
+            return redirect('BuscarImagenes')
+    return render(request, 'error.html', {'message': 'No se pudo eliminar la imagen.'})
 
 
 '''''
