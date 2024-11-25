@@ -12,6 +12,7 @@
 <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
 <img id="photo" alt="La foto capturada aparecerá aquí">
 <p id="countdown"></p>
+<p id="notification"></p>
 
 <script>
     const video = document.getElementById('video');
@@ -20,7 +21,9 @@
     const startCaptureButton = document.getElementById('startCapture');
     const cameraSelect = document.getElementById('cameraSelect');
     const countdown = document.getElementById('countdown');
+    const notification = document.getElementById('notification');
     let captureCount = 0;
+    let remainingImages = 5;
 
     // Enumerar dispositivos de video
     navigator.mediaDevices.enumerateDevices()
@@ -64,13 +67,31 @@
 
     // Iniciar la captura de imágenes
     startCaptureButton.addEventListener('click', () => {
-        startCaptureButton.disabled = true; // Desactivar el botón
-        captureCount = 0;
-        captureImages();
+        fetch('/get_remaining_images/')
+            .then(response => response.json())
+            .then(data => {
+                remainingImages = data.remaining_images;
+                if (remainingImages <= 0) {
+                    notification.innerText = 'No se pueden registrar más de 20 imágenes.';
+                } else if (remainingImages < 5) {
+                    notification.innerText = `Solo puedes capturar ${remainingImages} imágenes más.`;
+                    startCaptureButton.disabled = true; // Desactivar el botón
+                    captureCount = 0;
+                    captureImages(Math.min(remainingImages, 5));
+                } else {
+                    notification.innerText = '';
+                    startCaptureButton.disabled = true; // Desactivar el botón
+                    captureCount = 0;
+                    captureImages(5);
+                }
+            })
+            .catch(error => {
+                console.error('Error al obtener el número de imágenes restantes:', error);
+            });
     });
 
-    function captureImages() {
-        if (captureCount < 5) {
+    function captureImages(maxImages) {
+        if (captureCount < maxImages) {
             let countdownValue = 3;
             countdown.innerText = countdownValue;
             const countdownInterval = setInterval(() => {
@@ -78,13 +99,13 @@
                 countdown.innerText = countdownValue;
                 if (countdownValue === 0) {
                     clearInterval(countdownInterval);
-                    captureImage();
+                    captureImage(maxImages);
                 }
             }, 1000);
         }
     }
 
-    function captureImage() {
+    function captureImage(maxImages) {
         const context = canvas.getContext('2d');
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         const data = canvas.toDataURL('image/png');
@@ -92,8 +113,8 @@
         photo.style.display = 'block';
         captureCount++;
         sendImageToServer(data, captureCount);
-        if (captureCount < 5) {
-            setTimeout(captureImages, 1000);
+        if (captureCount < maxImages) {
+            setTimeout(() => captureImages(maxImages), 1000);
         } else {
             countdown.innerText = 'Captura completada';
             startCaptureButton.disabled = false; // Reactivar el botón
