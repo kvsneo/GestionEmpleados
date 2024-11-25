@@ -1,74 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Usuarios</title>
-</head>
-<body>
-<h1>Lista de Usuarios</h1>
- {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li class="{{ message.tags }}">{{ message }}</li>
-            {% endfor %}
-        </ul>
- {% endif %}
+{% extends 'base.html' %}
 
-{% if is_admin %}
-    <h2>Administradores</h2>
-    {% if administradores %}
-        <ul>
-            {% for admin in administradores %}
-                <li>
-                    {{ admin.username }} - {{ admin.email }}
-                    <a href="{% url 'edit_user' admin.id %}">Editar</a>
-                    <a href="{% url 'delete_user' admin.id %}">Eliminar</a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No hay administradores registrados.</p>
+{% block title %}Lista de Usuarios{% endblock %}
+
+{% block content %}
+    <h1>Lista de Usuarios</h1>
+
+    {% if is_admin %}
+        <h2 class="mt-4">Administradores</h2>
+        {% if administradores %}
+            <div class="list-group">
+                {% for admin in administradores %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ admin.username }} - {{ admin.email }}
+                        <div>
+                            <a href="{% url 'edit_user' admin.id %}" class="btn btn-sm btn-primary">Editar</a>
+                            <a href="{% url 'delete_user' admin.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="mt-2">No hay administradores registrados.</p>
+        {% endif %}
+
+        <h2 class="mt-4">Gerentes</h2>
+        {% if gerentes %}
+            <div class="list-group">
+                {% for gerente in gerentes %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ gerente.username }} - {{ gerente.email }}
+                        <div>
+                            <a href="{% url 'edit_user' gerente.id %}" class="btn btn-sm btn-primary">Editar</a>
+                            <a href="{% url 'delete_user' gerente.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="mt-2">No hay gerentes registrados.</p>
+        {% endif %}
     {% endif %}
 
-    <h2>Gerentes</h2>
-    {% if gerentes %}
-        <ul>
-            {% for gerente in gerentes %}
-                <li>
-                    {{ gerente.username }} - {{ gerente.email }}
-                    <a href="{% url 'edit_user' gerente.id %}">Editar</a>
-                    <a href="{% url 'delete_user' gerente.id %}">Eliminar</a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No hay gerentes registrados.</p>
-    {% endif %}
-{% endif %}
-
-<h2>Empleados</h2>
-{% if empleados %}
-    <ul>
-        {% for empleado in empleados %}
-            <li>
-                {{ empleado.username }} - {{ empleado.email }}
-                {% if is_admin %}
-                    (Gerente:
-                    {% if empleado.manager %}
-                        {{ empleado.manager.username }}
-                    {% else %}
-                        Sin asignar
+    <h2 class="mt-4">Empleados</h2>
+    {% if empleados %}
+        <div class="list-group">
+            {% for empleado in empleados %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ empleado.username }} - {{ empleado.email }}
+                    {% if is_admin %}
+                        <span class="badge bg-secondary ms-2">
+                            Gerente: 
+                            {% if empleado.manager %}
+                                {{ empleado.manager.username }}
+                            {% else %}
+                                Sin asignar
+                            {% endif %}
+                        </span>
                     {% endif %}
-                    )
-                {% endif %}
-                <a href="{% url 'edit_user' empleado.id %}">Editar</a>
-                <a href="{% url 'delete_user' empleado.id %}">Eliminar</a>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>No hay empleados registrados.</p>
-{% endif %}
-</body>
-</html>
+                    <div>
+                        <a href="{% url 'edit_user' empleado.id %}" class="btn btn-sm btn-primary">Editar</a>
+                        <a href="{% url 'delete_user' empleado.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="mt-2">No hay empleados registrados.</p>
+    {% endif %}
+     <p class="mt-4"><a href="{% url 'dashboard' %}" class="btn btn-secondary">Regresar</a></p>
+{% endblock %}

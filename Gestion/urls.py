@@ -54,6 +54,16 @@ urlpatterns = [
     path('EliminarImagen/<str:nombre_usuario>/<str:nombre_imagen>/', views.eliminar_imagen,
          name='EliminarImagen'),
 
+    path('ReconocimientoUsuarios/', views.reconocimineto_usuarios, name='ReconocimientoUsuarios'),
+
+    path('reportes/', views.reportes, name='reportes'),
+    path('reporte_justificantes/', views.reporte_justificantes, name='reporte_justificantes'),
+    path('reporte_solicitudes/', views.reporte_solicitudes, name='reporte_solicitudes'),
+
+    path('password_reset/', views.password_reset_request, name='password_reset_request'),
+    path('password_reset_verify/', views.password_reset_verify, name='password_reset_verify'),
+
+
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL1, document_root=settings.MEDIA_ROOT1)

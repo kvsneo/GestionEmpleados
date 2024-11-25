@@ -1,4 +1,4 @@
-from datetime import timedelta, timezone
+from datetime import time, timezone
 
 from django import forms
 from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
@@ -13,6 +13,21 @@ class AdminCreationForm(UserCreationForm):
         model = CustomUser
         fields = ('first_name', 'last_name', 'middle_name', 'password1', 'password2', 'email')
 
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        base_username = (self.cleaned_data['first_name'][:3] +
+                         self.cleaned_data['last_name'][:3] +
+                         self.cleaned_data['middle_name'][:3]).lower()
+        username = base_username
+        counter = 1
+        while CustomUser.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+        user.username = username
+        if commit:
+            user.save()
+        return user
+
 
 class ManagerCreationForm(UserCreationForm):
     class Meta:
@@ -21,9 +36,15 @@ class ManagerCreationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.username = (self.cleaned_data['first_name'][:3] +
+        base_username = (self.cleaned_data['first_name'][:3] +
                          self.cleaned_data['last_name'][:3] +
                          self.cleaned_data['middle_name'][:3]).lower()
+        username = base_username
+        counter = 1
+        while CustomUser.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+        user.username = username
         if commit:
             user.save()
         return user
@@ -38,9 +59,15 @@ class EmployeeCreationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.username = (self.cleaned_data['first_name'][:3] +
+        base_username = (self.cleaned_data['first_name'][:3] +
                          self.cleaned_data['last_name'][:3] +
                          self.cleaned_data['middle_name'][:3]).lower()
+        username = base_username
+        counter = 1
+        while CustomUser.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+        user.username = username
         if commit:
             user.save()
         return user
@@ -128,7 +155,7 @@ class JustificanteForm(forms.ModelForm):
             raise forms.ValidationError('La fecha no puede ser mayor a la fecha actual.')
 
         # Calcular la fecha límite (hace 15 días desde la fecha actual)
-        fecha_limite = fecha_actual - timedelta(days=15)
+        fecha_limite = fecha_actual - time(days=15)
 
         # Validar que la fecha no sea anterior a los últimos 15 días
         if fecha < fecha_limite:
@@ -153,6 +180,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
 
 class ScheduleForm(forms.Form):
     MONTH_CHOICES = [
@@ -179,3 +207,22 @@ class ScheduleForm(forms.Form):
             self.fields['employee'].queryset = CustomUser.objects.filter(manager=user)
         elif user and user.is_admin():
             self.fields['employee'].queryset = CustomUser.objects.filter(role='employee')
+
+
+class PasswordResetRequestForm(forms.Form):
+    email = forms.EmailField(label="Email", max_length=254)
+
+class PasswordResetVerifyForm(forms.Form):
+    email = forms.EmailField(label="Email", max_length=254)
+    reset_code = forms.CharField(label="Reset Code", max_length=6)
+    new_password1 = forms.CharField(label="New Password", widget=forms.PasswordInput)
+    new_password2 = forms.CharField(label="Confirm New Password", widget=forms.PasswordInput)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password1 = cleaned_data.get("new_password1")
+        new_password2 = cleaned_data.get("new_password2")
+
+        if new_password1 and new_password2 and new_password1 != new_password2:
+            raise forms.ValidationError("Passwords do not match.")
+        return cleaned_data

@@ -1,72 +1,136 @@
 {% extends "base.html" %}
+{% block title %}Panel{% endblock %}
 
 {% block content %}
-        <div class="container mt-4">
-        <h1 class="mb-4">Bienvenido, {{ user.username }}</h1>
-        {% if messages %}
-            <div>
-                {% for message in messages %}
-                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-        <!-- Opciones para Administradores -->
-       {% if es_admin %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h2>Opciones de Administrador</h2>
+<div class="container mt-4">
+    <h1 class="mb-4">Bienvenido, {{ user.username }}</h1>
+    
+    {% if messages %}
+        <div>
+            {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                    {{ message }}
                 </div>
-                <div class="card-body">
-                    <ul>
-                        <li><a href="{% url 'create_admin' %}" class="btn btn-primary">Crear Administrador</a></li>
-                        <li><a href="{% url 'create_manager' %}" class="btn btn-primary">Crear Manager</a></li>
-                        <li><a href="{% url 'create_employee' %}" class="btn btn-primary">Crear Empleado</a></li>
-                        <li><a href="{% url 'list_users' %}" class="btn btn-primary">Lista de Usuarios</a></li>
-                        <li><a href="{% url 'index_photos' %}" class="btn btn-primary">Indexar Fotos</a></li>
-                        <li><a href="{% url 'edit_employee_profile' %}" class="btn btn-primary">Editar Perfil</a></li>
-                        <li><a href="{% url 'change_password' %}" class="btn btn-primary">Cambiar Contraseña</a></li>
-                        <li><a href="{% url 'change_schedule' %}" class="btn btn-primary">Cambiar Horario de Empleados</a></li>
-                    </ul>
-                </div>
-            </div>
-        {% endif %}
-        <!-- Opciones para Gerentes -->
-        {% if es_gerente %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h2>Opciones de Gerente</h2>
-                </div>
-                <div class="card-body">
-                    <ul>
-                        <li><a href="{% url 'list_users' %}" class="btn btn-primary">Lista de Usuarios</a></li>
-                        <li><a href="{% url 'create_employee' %}" class="btn btn-primary">Crear Empleados</a></li>
-                        <li><a href="{% url 'lista_justificantes' %}" class="btn btn-info">Ver Justificantes</a></li>
-                        <li><a href="{% url 'index_photos' %}" class="btn btn-primary">Indexar Fotos</a></li>
-                        <li><a href="{% url 'edit_employee_profile' %}" class="btn btn-primary">Editar Perfil</a></li>
-                        <li><a href="{% url 'change_password' %}" class="btn btn-primary">Cambiar Contraseña</a></li>
-                        <li><a href="{% url 'change_schedule' %}" class="btn btn-primary">Cambiar Horario de Empleados</a></li>
-                    </ul>
-                </div>
-            </div>
-        {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
 
-        <!-- Opciones para Empleados -->
-        {% if es_empleado %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h2>Opciones de Empleado</h2>
+    <!-- Opciones para Administradores -->
+    {% if es_admin %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2>Opciones de Administrador</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <a href="{% url 'create_admin' %}" class="btn btn-primary btn-block">Crear Administrador</a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'create_manager' %}" class="btn btn-secondary btn-block">Crear Manager</a>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <ul>
-                        <li><a href="{% url 'subir_justificante' %}" class="btn btn-primary">Subir Justificante</a></li>
-                        <li><a href="{% url 'lista_justificantes' %}" class="btn btn-info">Ver Justificantes</a></li>
-                        <li><a href="{% url 'edit_employee_profile' %}" class="btn btn-primary">Editar Perfil</a></li>
-                        <li><a href="{% url 'change_password' %}" class="btn btn-primary">Cambiar Contraseña</a></li>
-                    </ul>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <a href="{% url 'create_employee' %}" class="btn btn-primary btn-block">Crear Empleado</a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'list_users' %}" class="btn btn-secondary btn-block">Lista de Usuarios</a>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <a href="{% url 'index_photos' %}" class="btn btn-primary btn-block">Indexar Fotos</a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'edit_employee_profile' %}" class="btn btn-secondary btn-block">Editar Perfil</a>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <a href="{% url 'change_password' %}" class="btn btn-primary btn-block">Cambiar Contraseña</a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'change_schedule' %}" class="btn btn-secondary btn-block">Cambiar Horario de Empleados</a>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <a href="{% url 'reportes' %}" class="btn btn-secondary btn-block">Generar reportes</a>
+                    </div>
                 </div>
             </div>
-        {% endif %}
-    </div>
+        </div>
+    {% endif %}
+
+    <!-- Opciones para Gerentes -->
+    {% if es_gerente %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2>Opciones de Gerente</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <a href="{% url 'list_users' %}" class="btn btn-primary btn-block">Lista de Usuarios</a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'create_employee' %}" class="btn btn-secondary btn-block">Crear Empleados</a>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <a href="{% url 'lista_justificantes' %}" class="btn btn-primary btn-block">Ver Justificantes</a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'index_photos' %}" class="btn btn-secondary btn-block">Indexar Fotos</a>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <a href="{% url 'edit_employee_profile' %}" class="btn btn-primary btn-block">Editar Perfil</a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'change_password' %}" class="btn btn-secondary btn-block">Cambiar Contraseña</a>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <a href="{% url 'change_schedule' %}" class="btn btn-primary btn-block">Cambiar Horario de Empleados</a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'reportes' %}" class="btn btn-secondary btn-block">Generar reportes</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Opciones para Empleados -->
+    {% if es_empleado %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2>Opciones de Empleado</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <a href="{% url 'subir_justificante' %}" class="btn btn-primary btn-block">Subir Justificante</a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'lista_justificantes' %}" class="btn btn-secondary btn-block">Ver Justificantes</a>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <a href="{% url 'edit_employee_profile' %}" class="btn btn-primary btn-block">Editar Perfil</a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'change_password' %}" class="btn btn-secondary btn-block">Cambiar Contraseña</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}

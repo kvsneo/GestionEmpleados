@@ -1,13 +1,35 @@
-<!-- create_employee.html -->
-<style>
-    input[disabled], select[disabled], textarea[disabled] {
-        background-color: #f0f0f0;
-        color: #888;
-        cursor: not-allowed;
-    }
-</style>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Create Employee</button>
-</form>
+{% extends 'base.html' %}
+
+{% block title %}Crear Empleado{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Crear Empleado</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Si el formulario tiene errores, mostrar una alerta -->
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <strong>Hay errores en el formulario. Corrígelos y vuelve a intentarlo.</strong>
+            </div>
+        {% endif %}
+        
+        <div class="mb-3">
+            <!-- Campo de formulario (cada campo tiene una clase de Bootstrap) -->
+            {{ form.as_p }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Crear Empleado</button>
+    </form>
+
+    <style>
+        /* Personalización de los campos deshabilitados */
+        input[disabled], select[disabled], textarea[disabled] {
+            background-color: #f0f0f0;
+            color: #888;
+            cursor: not-allowed;
+        }
+    </style>
+     <p class="mt-4"><a href="{% url 'dashboard' %}" class="btn btn-secondary">Regresar</a></p>
+{% endblock %}

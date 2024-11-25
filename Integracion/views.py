@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+from datetime import datetime
 from datetime import timedelta
 
 from django.conf import settings
@@ -553,7 +554,11 @@ def change_schedule(request):
             employee_schedule, created = EmployeeSchedule.objects.update_or_create(
                 employee=employee,
                 month=month,
-                defaults={'schedule_start': schedule_start, 'schedule_end': schedule_end}
+                defaults={
+                    'schedule_start': schedule_start,
+                    'schedule_end': schedule_end,
+                    'username': employee.username  # Add the username here
+                }
             )
             return redirect('dashboard')
     else:
@@ -585,3 +590,275 @@ def eliminar_imagen(request, nombre_usuario, nombre_imagen):
             os.remove(ruta_imagen)
             return HttpResponseRedirect(reverse('BuscarImagenes'))
     return render(request, 'error.html', {'mensaje': 'No se pudo eliminar la imagen.'})
+
+
+from django.http import HttpResponse
+
+
+def reconocimineto_usuarios(request):
+    known_faces, known_names = obtener_rostros_conocidos()
+    capturar_img_de_camara(known_faces, known_names)
+    return HttpResponse("Ejecutando Reconocimiento.")
+
+
+@login_required
+def reportes(request):
+    return render(request, "reportes.html")
+
+
+@login_required
+def reporte_justificantes(request):
+    if request.user.role not in ['admin', 'manager']:
+        messages.error(request, 'No tienes permiso para acceder a esta página.')
+        return redirect('dashboard')
+
+    aceptados_count = 0
+    rechazados_count = 0
+    justificantes = Justificante.objects.exclude(estado='Pendiente')
+
+    if request.user.role == 'manager':
+        justificantes = justificantes.filter(empleado__manager=request.user)
+
+    cuatrimestre = request.GET.get('cuatrimestre')
+    anio = request.GET.get('anio')
+    estado = request.GET.get('estado')
+
+    if cuatrimestre and anio:
+        try:
+            cuatrimestre = int(cuatrimestre)
+            anio = int(anio)
+            current_year = datetime.now().year
+            if anio < 2020 or anio > current_year:
+                messages.error(request, f"El año debe estar entre 2020 y {current_year}.")
+                return redirect('reporte_justificantes')
+
+            if cuatrimestre == 1:
+                meses = [1, 2, 3, 4]
+            elif cuatrimestre == 2:
+                meses = [5, 6, 7, 8]
+            elif cuatrimestre == 3:
+                meses = [9, 10, 11, 12]
+            else:
+                messages.error(request, "El cuatrimestre seleccionado no es válido.")
+                return redirect('reporte_justificantes')
+
+            justificantes = justificantes.filter(fecha__year=anio, fecha__month__in=meses)
+        except ValueError:
+            messages.error(request, "El cuatrimestre o el año seleccionado no son válidos.")
+            return redirect('reporte_justificantes')
+    elif request.GET:
+        messages.error(request, "Debes seleccionar un cuatrimestre y un año.")
+        return redirect('reporte_justificantes')
+
+    if estado:
+        justificantes = justificantes.filter(estado=estado)
+
+    if justificantes.exists():
+        aceptados_count = justificantes.filter(estado='Aceptado').count()
+        rechazados_count = justificantes.filter(estado='Rechazado').count()
+
+    if not justificantes.exists() and request.GET:
+        messages.info(request, "No hay justificantes registrados para los criterios seleccionados.")
+
+    valid_years = list(range(2020, datetime.now().year + 1))
+
+    context = {
+        'justificantes': justificantes,
+        'aceptados_count': aceptados_count,
+        'rechazados_count': rechazados_count,
+        'valid_years': valid_years,
+        'cuatrimestre': cuatrimestre,
+        'anio': anio,
+        'estado': estado,
+    }
+
+    return render(request, 'reporte_justificantes.html', context)
+
+
+def reporte_solicitudes(request):
+    empleados = CustomUser.objects.none()
+    if request.user.is_manager():
+        empleados = CustomUser.objects.filter(manager=request.user)
+    elif request.user.is_admin():
+        empleados = CustomUser.objects.filter(role='employee')
+
+    current_year = timezone.now().year
+    years_range = range(2020, current_year + 1)
+
+    report_data = None
+    aceptados_count = 0
+    rechazados_count = 0
+
+    if request.method == 'POST':
+        empleado_id = request.POST.get('employee')
+        month = request.POST.get('month')
+        year = request.POST.get('year')
+
+        if not empleado_id or not month or not year:
+            messages.error(request, "Por favor, selecciona un empleado, mes y año.")
+        else:
+            year = int(year)
+            employee = CustomUser.objects.get(id=empleado_id)
+            month_num = list(dict([
+                ('January', 'Enero'), ('February', 'Febrero'), ('March', 'Marzo'),
+                ('April', 'Abril'), ('May', 'Mayo'), ('June', 'Junio'),
+                ('July', 'Julio'), ('August', 'Agosto'), ('September', 'Septiembre'),
+                ('October', 'Octubre'), ('November', 'Noviembre'), ('December', 'Diciembre')
+            ])).index(month) + 1
+
+            start_date = timezone.datetime(year, month_num, 1)
+            end_date = timezone.datetime(year, month_num + 1, 1) if month_num < 12 else timezone.datetime(year + 1, 1,
+                                                                                                          1)
+
+            report_data = Justificante.objects.filter(
+                empleado=employee,
+                fecha__gte=start_date,
+                fecha__lt=end_date
+            ).exclude(estado='Pendiente').select_related('empleado').values('motivo', 'fecha', 'estado',
+                                                                            'empleado__first_name',
+                                                                            'empleado__middle_name',
+                                                                            'empleado__last_name')
+
+            aceptados_count = report_data.filter(estado='Aceptado').count()
+            rechazados_count = report_data.filter(estado='Rechazado').count()
+
+            if not report_data:
+                messages.warning(request,
+                                 "No se encontraron justificantes para el empleado seleccionado en el mes y año indicados.")
+
+    return render(request, 'reporte_solicitudes.html', {
+        'empleados': empleados,
+        'report_data': report_data,
+        'years_range': years_range,
+        'aceptados_count': aceptados_count,
+        'rechazados_count': rechazados_count
+    })
+
+
+import cv2
+import face_recognition
+import mysql.connector
+import numpy as np
+
+
+def obtener_rostros_conocidos(db_name='basegestionempleados'):
+    conn = mysql.connector.connect(host='localhost', user='root',  # Cambia a tu usuario de MySQL
+                                   password='',  # Cambia a tu contraseña de MySQL
+                                   database=db_name)
+    c = conn.cursor()
+    c.execute("SELECT name, encoding FROM faces")
+    rows = c.fetchall()
+    known_faces = []
+    known_names = []
+    for row in rows:
+        name, encoding = row
+        known_faces.append(np.frombuffer(encoding, dtype=np.float64))
+        known_names.append(name)
+    conn.close()
+    return known_faces, known_names
+
+
+def comparar_rostros(known_faces, known_names, captured_image_path):
+    captured_image = face_recognition.load_image_file(captured_image_path)
+    captured_image_encoding = face_recognition.face_encodings(captured_image)
+
+    if not captured_image_encoding:
+        raise ValueError("No se encontraron rostros en la imagen capturada.")
+
+    for known_face, name in zip(known_faces, known_names):
+        match = face_recognition.compare_faces([known_face], captured_image_encoding[0])
+        if match[0]:
+            # Insert match information into the database
+            conn = mysql.connector.connect(host='localhost', user='root', password='', database='basegestionempleados')
+            c = conn.cursor()
+            match_time = datetime.datetime.now()
+            c.execute("INSERT INTO match_info (name, match_time) VALUES (%s, %s)", (name, match_time))
+            conn.commit()
+            conn.close()
+            return name
+    return None
+
+
+def capturar_img_de_camara(known_faces, known_names):
+    video_capture = cv2.VideoCapture(1)
+    while True:
+        try:
+            ret, frame = video_capture.read()
+            cv2.imshow('Video', frame)
+
+            # presiona 'q' para salir de la transmisión de la cámara
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+            # presiona la barra espaciadora para capturar la imagen
+            if cv2.waitKey(1) & 0xFF == ord(' '):
+                if ret:
+                    cv2.imwrite('imagen_capturada.jpg', frame)
+                    match_name = comparar_rostros(known_faces, known_names, 'imagen_capturada.jpg')
+                    if match_name:
+                        print(f"Rostro Coincide : {match_name}")
+                    else:
+                        print("No se encontró coincidencia.")
+                else:
+                    raise Exception("Error al capturar la imagen de la cámara")
+        except Exception as e:
+            print(f"Error: {e}")
+
+    video_capture.release()
+    cv2.destroyAllWindows()
+
+
+import random
+import string
+from .forms import PasswordResetRequestForm, PasswordResetVerifyForm
+
+
+def generate_reset_code():
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+
+def password_reset_request(request):
+    if request.method == 'POST':
+        form = PasswordResetRequestForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            user = CustomUser.objects.filter(email=email).first()
+            if user:
+                reset_code = generate_reset_code()
+                user.reset_code = reset_code
+                user.save()
+                send_mail(
+                    'Password Reset Code',
+                    f'Your password reset code is: {reset_code}',
+                    'your_email@example.com',
+                    [email],
+                    fail_silently=False,
+                )
+                messages.success(request, 'A reset code has been sent to your email.')
+                return redirect('password_reset_verify')
+            else:
+                messages.error(request, 'No user found with this email.')
+    else:
+        form = PasswordResetRequestForm()
+    return render(request, 'password_reset_request.html', {'form': form})
+
+
+def password_reset_verify(request):
+    if request.method == 'POST':
+        form = PasswordResetVerifyForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            reset_code = form.cleaned_data['reset_code']
+            new_password = form.cleaned_data['new_password1']
+            user = CustomUser.objects.filter(email=email, reset_code=reset_code).first()
+            if user:
+                user.set_password(new_password)
+                user.reset_code = ''
+                user.save()
+                messages.success(request, 'Your password has been reset successfully.')
+                return redirect('login')
+            else:
+                messages.error(request, 'Invalid reset code or email.')
+    else:
+        form = PasswordResetVerifyForm()
+    return render(request, 'password_reset_verify.html', {'form': form})

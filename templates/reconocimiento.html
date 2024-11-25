@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reconocimiento Facial</title>
+</head>
+<body>
+<h1>Reconocimiento Facial</h1>
+<select id="cameraSelect"></select>
+<video id="video" width="640" height="480" autoplay></video>
+<button id="startRecognition">Iniciar Reconocimiento</button>
+<canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+<p id="notification"></p>
+
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const notification = document.getElementById('notification');
+    const startRecognitionButton = document.getElementById('startRecognition');
+    const cameraSelect = document.getElementById('cameraSelect');
+
+    // Enumerar dispositivos de video
+    navigator.mediaDevices.enumerateDevices()
+        .then(devices => {
+            devices.forEach(device => {
+                if (device.kind === 'videoinput') {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || `Camera ${cameraSelect.length + 1}`;
+                    cameraSelect.appendChild(option);
+                }
+            });
+        })
+        .catch(err => {
+            console.error("Error al enumerar dispositivos: ", err);
+        });
+
+    // Cambiar la cámara seleccionada
+    cameraSelect.addEventListener('change', () => {
+        if (video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+        }
+        const deviceId = cameraSelect.value;
+        navigator.mediaDevices.getUserMedia({video: {deviceId: {exact: deviceId}}})
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("Error al acceder a la cámara: ", err);
+            });
+    });
+
+    // Acceder a la cámara por defecto
+    navigator.mediaDevices.getUserMedia({video: true})
+        .then(stream => {
+            video.srcObject = stream;
+        })
+        .catch(err => {
+            console.error("Error al acceder a la cámara: ", err);
+        });
+
+    // Iniciar el reconocimiento facial
+    startRecognitionButton.addEventListener('click', () => {
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const data = canvas.toDataURL('image/png');
+        sendImageToServer(data);
+    });
+
+    function sendImageToServer(data) {
+        fetch('/reconocer_usuario/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({image: data})
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    notification.innerText = `Usuario reconocido: ${data.name}`;
+                } else {
+                    notification.innerText = 'No se encontró coincidencia.';
+                }
+            })
+            .catch(error => {
+                console.error('Error al reconocer el rostro:', error);
+            });
+    }
+</script>
+</body>
+</html>

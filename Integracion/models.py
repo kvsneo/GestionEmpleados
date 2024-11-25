@@ -25,6 +25,7 @@ class CustomUser(AbstractUser):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     middle_name = models.CharField(max_length=30, blank=True, null=True)
+    reset_code = models.CharField(max_length=6, blank=True, null=True)  # Add this line
 
     def is_admin(self):
         return self.role == 'admin'
@@ -43,15 +44,6 @@ class Face(models.Model):
 
     class Meta:
         db_table = 'faces'
-
-
-class MatchInfo(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    match_time = models.DateTimeField()
-    estado = models.CharField(max_length=2, default='A')  # Asistencia por defecto
-
-    class Meta:
-        db_table = 'match_info'
 
 
 class Justificante(models.Model):
@@ -83,6 +75,12 @@ class EmployeeSchedule(models.Model):
     schedule_start = models.TimeField()
     schedule_end = models.TimeField()
     created_at = models.DateTimeField(auto_now_add=True)
+    username = models.CharField(max_length=150)  # Add this field
 
     def __str__(self):
         return f"{self.employee.username} - {self.month} - {self.schedule_start} to {self.schedule_end}"
+
+
+from django.contrib.auth.models import User
+
+

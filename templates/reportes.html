@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Reportes Disponibles</h2>
+    <p>Selecciona el tipo de reporte que deseas generar:</p>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <a href="{% url 'reporte_justificantes' %}" class="btn btn-primary btn-block">
+                Reporte General de Solicitudes Aceptadas/Rechazadas
+            </a>
+        </div>
+        <div class="col-md-6 mb-3">
+            <a href="{% url 'reporte_solicitudes' %}" class="btn btn-secondary btn-block">
+                Reporte de Solicitudes Aceptadas/Rechazadas por Empleado
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-block">Regresar</a>
+        </div>
+    </div>
+
+{% endblock %}
