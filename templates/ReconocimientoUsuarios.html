@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reconocimiento de Usuarios</title>
+</head>
+<body>
+<h1>Reconocimiento de Usuarios</h1>
+<select id="cameraSelect"></select>
+<video id="video" width="640" height="480" autoplay></video>
+<button id="captureButton">Capturar Imagen</button>
+<canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+<img id="capturedImage" alt="La imagen capturada aparecerá aquí">
+<p id="result"></p>
+
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const capturedImage = document.getElementById('capturedImage');
+    const captureButton = document.getElementById('captureButton');
+    const cameraSelect = document.getElementById('cameraSelect');
+    const result = document.getElementById('result');
+
+    // Enumerar dispositivos de video
+    navigator.mediaDevices.enumerateDevices()
+        .then(devices => {
+            devices.forEach(device => {
+                if (device.kind === 'videoinput') {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || `Camera ${cameraSelect.length + 1}`;
+                    cameraSelect.appendChild(option);
+                }
+            });
+        })
+        .catch(err => {
+            console.error("Error al enumerar dispositivos: ", err);
+        });
+
+    // Cambiar la cámara seleccionada
+    cameraSelect.addEventListener('change', () => {
+        if (video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+        }
+        const deviceId = cameraSelect.value;
+        navigator.mediaDevices.getUserMedia({video: {deviceId: {exact: deviceId}}})
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("Error al acceder a la cámara: ", err);
+            });
+    });
+
+    // Acceder a la cámara por defecto
+    navigator.mediaDevices.getUserMedia({video: true})
+        .then(stream => {
+            video.srcObject = stream;
+        })
+        .catch(err => {
+            console.error("Error al acceder a la cámara: ", err);
+        });
+
+    // Capturar la imagen
+    captureButton.addEventListener('click', () => {
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const data = canvas.toDataURL('image/png');
+        capturedImage.setAttribute('src', data);
+        capturedImage.style.display = 'block';
+        sendImageToServer(data);
+    });
+
+    function sendImageToServer(data) {
+        fetch('/save_imagee/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({image: data})
+        })
+            .then(response => response.json())
+            .then(data => {
+                result.innerText = data.message;
+            })
+            .catch(error => {
+                console.error('Error al enviar la imagen:', error);
+            });
+    }
+</script>
+</body>
+</html>
