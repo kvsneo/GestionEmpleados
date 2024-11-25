@@ -1,6 +1,3 @@
-{% extends "base.html" %}
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,24 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Arial', sans-serif;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            margin: 15px;
+        }
+        .card-header {
+            background-color: #ffc107; /* Amarillo */
+            color: #fff;
+            text-align: center;
+            font-size: 1.5rem;
+            padding: 1.5rem 0;
+            font-weight: bold;
+            border-radius: 10px 10px 0 0;
+        }
+        .card-body {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 0 0 10px 10px;
+        }
+        .form-control {
+            border-radius: 5px;
+            padding: 0.75rem;
+            font-size: 1rem;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border-radius: 5px;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .alert-danger {
+            font-size: 0.9rem;
+        }
+        .text-center {
+            font-size: 1rem;
+            color: #333;
+        }
+        @media (max-width: 768px) {
+            .card {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
-{% block content %}
-    <body class="bg-light">
-    <div class="container mt-5">
+<body>
+    <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-4">
+            <div class="col-md-6 col-lg-4">
                 <div class="card shadow-sm">
+                    <div class="card-header">
+                      Iniciar Sesión
+                    </div>
                     <div class="card-body">
-                        <h3 class="text-center">Iniciar Sesión</h3>
+                        <h2 class="text-center mb-4">  Bienvenido</h2>
                         <form method="post">
                             {% csrf_token %}
                             <div class="mb-3">
                                 {{ form.username.label_tag }}
-                                {{ form.username }}
+                                <input type="text" class="form-control" name="username" id="id_username" required>
                             </div>
                             <div class="mb-3">
                                 {{ form.password.label_tag }}
-                                {{ form.password }}
+                                <input type="password" class="form-control" name="password" id="id_password" required>
                             </div>
                             <button type="submit" class="btn btn-primary w-100">Ingresar</button>
                         </form>
@@ -34,11 +93,11 @@
                                 Usuario o contraseña incorrectos.
                             </div>
                         {% endif %}
+                    <p class="text-center mt-3">¿Olvidaste tu Contraseña? <a href="{% url 'password_reset_request' %}">Recuperar</a></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    </body>
-{% endblock %}
+</body>
 </html>

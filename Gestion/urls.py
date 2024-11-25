@@ -35,6 +35,7 @@ urlpatterns = [
     path('edit_user/<int:user_id>/', views.edit_user, name='edit_user'),
     path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),
     path('capturarimagenes/', views.capturarimagenes, name='capturarimagenes'),
+    path('get_remaining_images/', views.get_remaining_images, name='get_remaining_images'),
     path('save_image/', views.save_image, name='save_image'),
 
     path('index_photos/', views.index_photos, name='index_photos'),
@@ -54,7 +55,7 @@ urlpatterns = [
     path('EliminarImagen/<str:nombre_usuario>/<str:nombre_imagen>/', views.eliminar_imagen,
          name='EliminarImagen'),
 
-    path('ReconocimientoUsuarios/', views.reconocimineto_usuarios, name='ReconocimientoUsuarios'),
+    path('ReconocimientoUsuarios/', views.reconocimiento_usuarios, name='ReconocimientoUsuarios'),
 
     path('reportes/', views.reportes, name='reportes'),
     path('reporte_justificantes/', views.reporte_justificantes, name='reporte_justificantes'),
@@ -63,6 +64,7 @@ urlpatterns = [
     path('password_reset/', views.password_reset_request, name='password_reset_request'),
     path('password_reset_verify/', views.password_reset_verify, name='password_reset_verify'),
 
+    path('save_imagee/', views.save_imagee, name='save_imagee'),
 
 ]
 if settings.DEBUG:

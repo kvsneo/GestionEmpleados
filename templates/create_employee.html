@@ -3,33 +3,72 @@
 {% block title %}Crear Empleado{% endblock %}
 
 {% block content %}
-    <h1 class="mb-4">Crear Empleado</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white text-center">
+                    <h3>Crear Nuevo Empleado</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Si el formulario tiene errores, mostrar una alerta -->
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+                                <strong>Hay errores en el formulario. Corrígelos y vuelve a intentarlo.</strong>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <!-- Campo de formulario (cada campo tiene una clase de Bootstrap) -->
+                            {% for field in form %}
+                                <div class="mb-3">
+                                    {{ field.label_tag }}
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger small">
+                                            {{ field.errors|striptags }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
 
-    <form method="post">
-        {% csrf_token %}
-        
-        <!-- Si el formulario tiene errores, mostrar una alerta -->
-        {% if form.errors %}
-            <div class="alert alert-danger">
-                <strong>Hay errores en el formulario. Corrígelos y vuelve a intentarlo.</strong>
+                        <button type="submit" class="btn btn-success w-100">Crear Empleado</button>
+                    </form>
+                </div>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Regresar</a>
             </div>
-        {% endif %}
-        
-        <div class="mb-3">
-            <!-- Campo de formulario (cada campo tiene una clase de Bootstrap) -->
-            {{ form.as_p }}
         </div>
-
-        <button type="submit" class="btn btn-primary">Crear Empleado</button>
-    </form>
-
-    <style>
-        /* Personalización de los campos deshabilitados */
-        input[disabled], select[disabled], textarea[disabled] {
-            background-color: #f0f0f0;
-            color: #888;
-            cursor: not-allowed;
-        }
-    </style>
-     <p class="mt-4"><a href="{% url 'dashboard' %}" class="btn btn-secondary">Regresar</a></p>
+    </div>
+    
+ 
+</div>
 {% endblock %}
+
+<style>
+    /* Personalización de los campos deshabilitados */
+    input[disabled], select[disabled], textarea[disabled] {
+        background-color: #f0f0f0;
+        color: #888;
+        cursor: not-allowed;
+    }
+
+    /* Estilo para botones personalizados */
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+</style>

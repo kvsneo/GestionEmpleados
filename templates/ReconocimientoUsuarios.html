@@ -2,24 +2,170 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reconocimiento de Usuarios</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+            text-align: center;
+        }
+
+        .instructions {
+            margin-bottom: 20px;
+            font-size: 2rem;
+            text-align: center;
+            color: #007bff;
+        }
+
+        .camera-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #cameraSelect {
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #video {
+            width: 640px;
+            height: 480px;
+            border-radius: 8px;
+            border: 2px solid #007bff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #captureButton {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #captureButton:hover {
+            background-color: #0056b3;
+        }
+
+        #capturedImage {
+            display: none;
+            margin-top: 20px;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #007bff;
+        }
+
+        .floating-message {
+            position: fixed;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 123, 255, 0.9);
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 2rem;
+            text-align: center;
+            display: none;
+            z-index: 1000;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1rem;
+            margin: 20px 0;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-<h1>Reconocimiento de Usuarios</h1>
-<select id="cameraSelect"></select>
-<video id="video" width="640" height="480" autoplay></video>
-<button id="captureButton">Capturar Imagen</button>
-<canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
-<img id="capturedImage" alt="La imagen capturada aparecerá aquí">
-<p id="result"></p>
+    <h1>Reconocimiento de Usuarios</h1>
+    <div class="instructions">
+       Mira directamente a la cámara
+    </div>
+    <div class="camera-container">
+        <!-- Selector de cámaras -->
+        <select id="cameraSelect"></select>
 
-<script>
+        <!-- Vista previa de la cámara -->
+        <video id="video" autoplay></video>
+
+        <!-- Botón de captura -->
+        <button id="captureButton">Capturar Imagen</button>
+
+        <!-- Canvas para capturar la imagen -->
+        <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+
+        <!-- Imagen capturada -->
+        <img id="capturedImage" alt="Captured Image">
+    </div>
+
+    <!-- Resultado del reconocimiento -->
+    <div id="result"></div>
+
+    <!-- Mensaje flotante -->
+    <div id="floatingMessage" class="floating-message"></div>
+
+    <div class="instructions">
+       Por favor, asegúrate de:<br>
+
+Retirar objetos que puedan cubrir tu rostro, como gorras, lentes oscuros, o mascarillas.<br>
+Mantener una posición recta frente a la cámara para facilitar la detección.
+    </div>
+
+    <a href="{% url 'dashboard' %}" class="btn">Regresar al Dashboard</a>
+
+    <script>
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const capturedImage = document.getElementById('capturedImage');
     const captureButton = document.getElementById('captureButton');
     const cameraSelect = document.getElementById('cameraSelect');
     const result = document.getElementById('result');
+    const floatingMessage = document.getElementById('floatingMessage');
 
     // Enumerar dispositivos de video
     navigator.mediaDevices.enumerateDevices()
@@ -82,12 +228,20 @@
         })
             .then(response => response.json())
             .then(data => {
-                result.innerText = data.message;
+                showFloatingMessage(data.message);
             })
             .catch(error => {
                 console.error('Error al enviar la imagen:', error);
             });
     }
-</script>
+
+    function showFloatingMessage(message) {
+        floatingMessage.innerText = message;
+        floatingMessage.style.display = 'block';
+        setTimeout(() => {
+            floatingMessage.style.display = 'none';
+        }, 5000);
+    }
+    </script>
 </body>
 </html>

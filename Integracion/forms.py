@@ -172,9 +172,18 @@ class EmployeeProfileForm(forms.ModelForm):
 
 
 class EmployeePasswordChangeForm(PasswordChangeForm):
-    old_password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
-    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
-    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    old_password = forms.CharField(
+        label='Clave anterior',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+    new_password1 = forms.CharField(
+        label='Nueva Clave',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+    new_password2 = forms.CharField(
+        label='Confirmar Clave',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
 
 
 from django import forms

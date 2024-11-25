@@ -1,6 +1,37 @@
-<!-- create_admin.html -->
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Create Admin</button>
-</form>
+{% extends "base.html" %}
+
+{% block title %}Crear Administrador{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3>Crear Nuevo Administrador</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small">
+                                        {{ field.errors|striptags }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary w-100">Crear Administrador</button>
+                    </form>
+                </div>
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Regresar</a>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

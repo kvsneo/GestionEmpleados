@@ -1,23 +1,25 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Reporte de Justificantes</h2>
+<div class="container mt-5">
+    <h2 class="text-center fw-bold mb-4">Reporte de Justificantes</h2>
 
-    <!-- Mostrar mensajes solo si hay algún mensaje -->
-    {% if messages %}
-        <div class="mt-3">
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+    <!-- Mostrar mensajes si existen -->
+   {% if messages %}
+    <div class="mt-3">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
+    <!-- Formulario de filtros -->
     <form method="get" class="mb-4">
-        <div class="row">
-            <!-- Selección del Cuatrimestre -->
+        <div class="row g-3">
+            <!-- Cuatrimestre -->
             <div class="col-md-4">
                 <label for="cuatrimestre" class="form-label">Cuatrimestre:</label>
                 <select name="cuatrimestre" id="cuatrimestre" class="form-select">
@@ -28,19 +30,18 @@
                 </select>
             </div>
 
-            <!-- Selección del Año -->
+            <!-- Año -->
             <div class="col-md-4">
                 <label for="anio" class="form-label">Año:</label>
                 <select name="anio" id="anio" class="form-select">
                     <option value="">Selecciona un año</option>
                     {% for year in valid_years %}
-                        <option value="{{ year }}"
-                                {% if anio == year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
+                        <option value="{{ year }}" {% if anio == year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
                     {% endfor %}
                 </select>
             </div>
 
-            <!-- Selección del Estado -->
+            <!-- Estado -->
             <div class="col-md-4">
                 <label for="estado" class="form-label">Estado:</label>
                 <select name="estado" id="estado" class="form-select">
@@ -50,73 +51,78 @@
                 </select>
             </div>
         </div>
-        <div class="mt-3">
-            <button type="submit" class="btn btn-primary">Filtrar</button>
+        <div class="mt-3 text-center">
+            <button type="submit" class="btn btn-primary btn-lg">Filtrar</button>
         </div>
     </form>
 
     <!-- Botón de impresión -->
-    <button id="printButton" class="btn btn-primary">Imprimir Reporte</button>
+    <div class="text-center mb-4">
+        <button id="printButton" class="btn btn-success btn-lg">Imprimir Reporte</button>
+    </div>
 
-    <!-- Mostrar resultados solo si el formulario fue enviado con filtros -->
+    <!-- Resultados -->
     {% if cuatrimestre and anio %}
         {% if justificantes %}
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead class="thead-dark">
-                    <tr>
-                        <th>Motivo</th>
-                        <th>Fecha</th>
-                        <th>Estado</th>
-                        <th>Empleado</th>
-                    </tr>
+                <table class="table table-hover table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Motivo</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Empleado</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    {% for justificante in justificantes %}
-                        <tr>
-                            <td>{{ justificante.motivo }}</td>
-                            <td>{{ justificante.fecha|date:"d M, Y" }}</td>
-                            <td>
-                                {% if justificante.estado == "Aceptado" %}
-                                    <span class="badge bg-success">Aceptado</span>
-                                {% elif justificante.estado == "Rechazado" %}
-                                    <span class="badge bg-danger">Rechazado</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ justificante.empleado.get_full_name }}</td>
-                        </tr>
-                    {% endfor %}
+                        {% for justificante in justificantes %}
+                            <tr>
+                                <td>{{ justificante.motivo }}</td>
+                                <td>{{ justificante.fecha|date:"d M, Y" }}</td>
+                                <td>
+                                    {% if justificante.estado == "Aceptado" %}
+                                        <span class="badge bg-success">✅ Aceptado</span>
+                                    {% elif justificante.estado == "Rechazado" %}
+                                        <span class="badge bg-danger">❌ Rechazado</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ justificante.empleado.get_full_name }}</td>
+                            </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
         {% else %}
-            <p>No se encontraron justificantes para los criterios seleccionados.</p>
+            <p class="text-danger">No se encontraron justificantes para los criterios seleccionados.</p>
         {% endif %}
     {% endif %}
 
-    <h3>Total</h3>
+    <!-- Totales -->
+    <h3 class="mt-4">Total</h3>
     <ul>
-        <li>Aceptados: {{ aceptados_count }}</li>
-        <li>Rechazados: {{ rechazados_count }}</li>
+        <li><strong>Aceptados:</strong> {{ aceptados_count }}</li>
+        <li><strong>Rechazados:</strong> {{ rechazados_count }}</li>
     </ul>
 
+    <div class="mt-4">
+        <a href="{% url 'reportes' %}" class="btn btn-secondary btn-lg">Regresar</a>
+    </div>
+</div>
 
-
-    <script>
-        // Función para activar la impresión
-        document.getElementById("printButton").addEventListener("click", function () {
-            window.print();  // Ejecuta la impresión de la página
-        });
-    </script>
-
-    <p><a href="{% url 'dashboard' %}" class="btn btn-secondary">Regresar</a></p>
-
-    <style>
-        @media print {
-            #printButton, button[type="submit"] {
-                display: none; /* Oculta el botón de impresión y el de filtrar */
-            }
+<style>
+    @media print {
+        #printButton, button[type="submit"], .btn-secondary {
+            display: none;
         }
-    </style>
+        h2, h3 {
+            text-align: center;
+        }
+    }
+</style>
 
+<script>
+    document.getElementById("printButton").addEventListener("click", function () {
+        window.print();
+    });
+</script>
 {% endblock %}

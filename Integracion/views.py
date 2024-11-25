@@ -1,6 +1,3 @@
-import base64
-import json
-import os
 from datetime import datetime
 from datetime import timedelta
 
@@ -10,7 +7,7 @@ from django.contrib.auth import logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -196,33 +193,76 @@ def delete_user(request, user_id):
     return render(request, 'confirm_delete.html', {'user': user, 'form': form})
 
 
+@login_required
 def capturarimagenes(request):
-    return render(request, 'capturarImagenes.html')
+    # Define the base path and user directory
+    base_path = os.path.join(settings.MEDIA_ROOT, 'UsuariosImagenes', request.user.username)
+
+    # Check the number of existing images
+    if os.path.exists(base_path):
+        existing_images = [f for f in os.listdir(base_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+        remaining_images = 20 - len(existing_images)
+        if remaining_images <= 0:
+            return render(request, 'error.html', {'message': 'No se pueden registrar más de 20 imágenes.'})
+        elif remaining_images < 5:
+            return render(request, 'capturarImagenes.html', {'remaining_images': remaining_images})
+
+    return render(request, 'capturarImagenes.html', {'remaining_images': 5})
+
+
+@login_required
+def get_remaining_images(request):
+    # Define the base path and user directory
+    base_path = os.path.join(settings.MEDIA_ROOT, 'UsuariosImagenes', request.user.username)
+
+    # Check the number of existing images
+    if os.path.exists(base_path):
+        existing_images = [f for f in os.listdir(base_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+        remaining_images = 20 - len(existing_images)
+    else:
+        remaining_images = 20
+
+    return JsonResponse({'remaining_images': remaining_images})
 
 
 @csrf_exempt
 def save_image(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        image_data = data['image'].split(',')[1]
-        capture_count = data['captureCount']
-        image_binary = base64.b64decode(image_data)
+        try:
+            data = json.loads(request.body)
+            image_data = data['image'].split(',')[1]
+            capture_count = data['captureCount']
+            image_binary = base64.b64decode(image_data)
 
-        # Define the base path and user directory
-        base_path = os.path.join(settings.MEDIA_ROOT, 'UsuariosImagenes', request.user.username)
-        if not os.path.exists(base_path):
-            os.makedirs(base_path)
+            # Define the base path and user directory
+            base_path = os.path.join(settings.MEDIA_ROOT, 'UsuariosImagenes', request.user.username)
+            if not os.path.exists(base_path):
+                os.makedirs(base_path)
 
-        # Find the next available filename
-        image_path = os.path.join(base_path, f'image_{capture_count}.png')
-        while os.path.exists(image_path):
-            capture_count += 1
-            image_path = os.path.join(base_path, f'image_{capture_count}.png')
+            # Check the number of existing images
+            existing_images = [f for f in os.listdir(base_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+            remaining_images = 20 - len(existing_images)
+            if remaining_images <= 0:
+                return JsonResponse({'status': 'error', 'message': 'No se pueden registrar más de 20 imágenes.'},
+                                    status=400)
+            elif capture_count > remaining_images:
+                return JsonResponse(
+                    {'status': 'error', 'message': f'Solo puedes capturar {remaining_images} imágenes más.'},
+                    status=400)
 
-        with open(image_path, 'wb') as f:
-            f.write(image_binary)
+            # Find the next available filename with leading zero for numbers less than 10
+            image_path = os.path.join(base_path, f'image_{len(existing_images) + 1:02}.png')
+            while os.path.exists(image_path):
+                image_path = os.path.join(base_path,
+                                          f'image_{len(existing_images) + len(os.listdir(base_path)) + 1:02}.png')
 
-        return JsonResponse({'status': 'success', 'image_path': image_path})
+            with open(image_path, 'wb') as f:
+                f.write(image_binary)
+
+            return JsonResponse({'status': 'success', 'image_path': image_path})
+        except Exception as e:
+            logger.info(f"Error saving image: {e}")
+            return JsonResponse({'status': 'error', 'message': 'Error processing the image.'}, status=400)
     return JsonResponse({'status': 'error'}, status=400)
 
 
@@ -365,7 +405,6 @@ def lista_justificantes(request):
     if request.method == 'POST':
         justificante_id = request.POST.get('justificante_id')
 
-
         # Manejo de actualización de estado (Aceptar o Rechazar)
         nuevo_estado = request.POST.get('nuevo_estado')
         if nuevo_estado in ['Aceptado', 'Rechazado']:
@@ -382,9 +421,6 @@ def lista_justificantes(request):
             except Justificante.DoesNotExist:
                 messages.error(request, 'El justificante no existe.')
             return redirect('lista_justificantes')
-
-
-
 
         # Manejo de eliminación
         if request.POST.get('eliminar_justificante') == 'true':
@@ -605,21 +641,32 @@ def buscar_imagenes(request):
 
 
 def eliminar_imagen(request, nombre_usuario, nombre_imagen):
+    ruta_usuario = os.path.join(BASE_DIR1, nombre_usuario)
+    imagenes = [archivo for archivo in os.listdir(ruta_usuario) if archivo.lower().endswith(('.png', '.jpg', '.jpeg'))]
+
+    if len(imagenes) <= 5:
+        return render(request, 'error.html',
+                      {'mensaje': 'No se puede eliminar la imagen. Debe tener al menos 5 imágenes.'})
+
     if request.method == 'POST':
-        ruta_imagen = os.path.join(BASE_DIR1, nombre_usuario, nombre_imagen)
+        ruta_imagen = os.path.join(ruta_usuario, nombre_imagen)
         if os.path.exists(ruta_imagen):
             os.remove(ruta_imagen)
             return HttpResponseRedirect(reverse('BuscarImagenes'))
     return render(request, 'error.html', {'mensaje': 'No se pudo eliminar la imagen.'})
 
 
-from django.http import HttpResponse
-
-
+'''''
 def reconocimineto_usuarios(request):
     known_faces, known_names = obtener_rostros_conocidos()
     capturar_img_de_camara(known_faces, known_names)
     return HttpResponse("Ejecutando Reconocimiento.")
+'''
+
+
+@login_required
+def reconocimiento_usuarios(request):
+    return render(request, 'ReconocimientoUsuarios.html')
 
 
 @login_required
@@ -668,7 +715,7 @@ def reporte_justificantes(request):
             messages.error(request, "El cuatrimestre o el año seleccionado no son válidos.")
             return redirect('reporte_justificantes')
     elif request.GET:
-        messages.error(request, "Debes seleccionar un cuatrimestre y un año.")
+        messages.warning(request, "Debes seleccionar un cuatrimestre y un año.")
         return redirect('reporte_justificantes')
 
     if estado:
@@ -779,7 +826,8 @@ def obtener_rostros_conocidos(db_name='basegestionempleados'):
     return known_faces, known_names
 
 
-import datetime
+
+
 
 def comparar_rostros(known_faces, known_names, captured_image_path):
     captured_image = face_recognition.load_image_file(captured_image_path)
@@ -794,7 +842,7 @@ def comparar_rostros(known_faces, known_names, captured_image_path):
             # Insert match information into the database
             conn = mysql.connector.connect(host='localhost', user='root', password='', database='basegestionempleados')
             c = conn.cursor()
-            match_time = datetime.datetime.now()  # Corrected this line
+            match_time = datetime.now()  # Corrected this line
             c.execute("INSERT INTO match_info (name, match_time) VALUES (%s, %s)", (name, match_time))
             conn.commit()
             conn.close()
@@ -872,7 +920,7 @@ def password_reset_verify(request):
         if form.is_valid():
             email = form.cleaned_data['email']
             reset_code = form.cleaned_data['reset_code']
-            new_password = form.cleaned_data['new_password1']
+            new_password = form.cleaned_data['Nueva_Clave']
             user = CustomUser.objects.filter(email=email, reset_code=reset_code).first()
             if user:
                 user.set_password(new_password)
@@ -885,3 +933,43 @@ def password_reset_verify(request):
     else:
         form = PasswordResetVerifyForm()
     return render(request, 'password_reset_verify.html', {'form': form})
+
+
+import base64
+import json
+import os
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .Reconocimineto.ReconocimientoUsuarios import obtener_rostros_conocidos, comparar_rostros
+
+
+@csrf_exempt
+def save_imagee(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        image_data = data['image'].split(',')[1]
+        image_binary = base64.b64decode(image_data)
+
+        # Guardar la imagen temporalmente
+        temp_image_path = 'temp_image.png'
+        with open(temp_image_path, 'wb') as f:
+            f.write(image_binary)
+
+        # Obtener rostros conocidos
+        known_faces, known_names = obtener_rostros_conocidos()
+
+        # Comparar rostros
+        try:
+            match_name = comparar_rostros(known_faces, known_names, temp_image_path)
+            if match_name:
+                message = f"Rostro coincide con: {match_name}"
+            else:
+                message = "No se encontró coincidencia."
+        except ValueError as e:
+            message = str(e)
+
+        # Imprimir el nombre del usuario reconocido
+        print(message)
+
+        return JsonResponse({'message': message})
+    return JsonResponse({'status': 'error'}, status=400)

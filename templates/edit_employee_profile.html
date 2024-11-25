@@ -1,11 +1,74 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+{% block title %}Editar Perfil{% endblock %}
 
 {% block content %}
-  <h2>Editar Perfil</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Guardar cambios</button>
-    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Regresar</a>
-  </form>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white text-center">
+                    <h3>Editar Perfil de {{ user.username }}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Si el formulario tiene errores, mostrar una alerta -->
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+                                <strong>Hay errores en el formulario. Corrígelos y vuelve a intentarlo.</strong>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Renderizar los campos del formulario -->
+                        <div class="mb-3">
+                            {% for field in form %}
+                                <div class="mb-3">
+                                    {{ field.label_tag }}
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger small">
+                                            {{ field.errors|striptags }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-success">Guardar cambios</button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Regresar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
+
+<style>
+    /* Personalización de los campos deshabilitados */
+    input[disabled], select[disabled], textarea[disabled] {
+        background-color: #f0f0f0;
+        color: #888;
+        cursor: not-allowed;
+    }
+
+    /* Estilo para botones personalizados */
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+</style>

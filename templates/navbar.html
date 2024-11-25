@@ -1,30 +1,25 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
     <div class="container">
-        <a class="navbar-brand" href="/">Navbar</a>
+        <a class="navbar-brand fw-bold" href="/">Gestión de Empleados</a>
         <button
-                class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarNav"
-                aria-controls="navbarNav"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
         >
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a href="/" class="nav-link">Home</a>
-                </li>
+                
                 {% if user.is_authenticated %}
+                    <li class="nav-item">
+                    <a href="/" class="nav-link active">Inicio</a>
+                </li>
                     {% if es_empleado %}
-                        <li class="nav-item">
-                            <a href="{% url 'subir_justificante' %}" class="nav-link">Subir Justificante</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url 'lista_justificantes' %}" class="nav-link">Ver Justificantes</a>
-                        </li>
                         <li class="nav-item">
                             <a href="{% url 'edit_employee_profile' %}" class="nav-link">Editar Perfil</a>
                         </li>
@@ -33,14 +28,11 @@
                         </li>
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/logout">Logout</a>
+                        <a class="nav-link text-danger" href="/logout">Cerrar Sesión</a>
                     </li>
                 {% else %}
-                    <li class="nav-item">
-                        <a href="/signin" class="nav-link">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/signup" class="nav-link">Register</a>
+                    <<li class="nav-item">
+                    <a class="nav-link">Bienvenido!</a>
                     </li>
                 {% endif %}
             </ul>
