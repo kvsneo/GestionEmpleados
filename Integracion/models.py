@@ -49,7 +49,7 @@ class Face(models.Model):
 class Justificante(models.Model):
     motivo = models.CharField(max_length=255)
     fecha = models.DateField()
-    estado = models.CharField(max_length=50, default="Pendiente")  # Valor por defecto
+    estado = models.CharField(max_length=50, default="Pendiente")
     empleado = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -62,6 +62,21 @@ class Justificante(models.Model):
         related_name='justificantes_subidos'
     )
 
+    def update_attendance_status(self):
+        # Use the existing Attendance model to update the attendance status
+        asis = asistencia.objects.filter(employee=self.empleado.username, date=self.fecha).first()
+        if asis and asis.status == 'sn':
+            asis.status = 'J'
+            asis.save()
+
+class asistencia(models.Model):
+    employee = models.CharField(max_length=150)
+    date = models.DateField()
+    hora = models.TimeField(auto_now_add=True)
+    status = models.CharField(max_length=2, default='sn')  # SN: Sin marcar, J: Justificado, A: Asistió, F: Falto
+
+    def __str__(self):
+        return f"{self.employee} - {self.date} - {self.status}"
 
 class JustificanteArchivo(models.Model):
     justificante = models.ForeignKey(Justificante, on_delete=models.CASCADE, related_name='archivos')

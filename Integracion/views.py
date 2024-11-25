@@ -365,6 +365,27 @@ def lista_justificantes(request):
     if request.method == 'POST':
         justificante_id = request.POST.get('justificante_id')
 
+
+        # Manejo de actualización de estado (Aceptar o Rechazar)
+        nuevo_estado = request.POST.get('nuevo_estado')
+        if nuevo_estado in ['Aceptado', 'Rechazado']:
+            try:
+                justificante = Justificante.objects.get(id=justificante_id)
+                if request.user.role in ['manager', 'admin']:
+                    justificante.estado = nuevo_estado
+                    justificante.save()
+                    if nuevo_estado == 'Aceptado':
+                        justificante.update_attendance_status()
+                    messages.success(request, f'El justificante ha sido {nuevo_estado.lower()} exitosamente.')
+                else:
+                    messages.error(request, 'No tienes permiso para realizar esta acción.')
+            except Justificante.DoesNotExist:
+                messages.error(request, 'El justificante no existe.')
+            return redirect('lista_justificantes')
+
+
+
+
         # Manejo de eliminación
         if request.POST.get('eliminar_justificante') == 'true':
             try:
@@ -758,6 +779,8 @@ def obtener_rostros_conocidos(db_name='basegestionempleados'):
     return known_faces, known_names
 
 
+import datetime
+
 def comparar_rostros(known_faces, known_names, captured_image_path):
     captured_image = face_recognition.load_image_file(captured_image_path)
     captured_image_encoding = face_recognition.face_encodings(captured_image)
@@ -771,7 +794,7 @@ def comparar_rostros(known_faces, known_names, captured_image_path):
             # Insert match information into the database
             conn = mysql.connector.connect(host='localhost', user='root', password='', database='basegestionempleados')
             c = conn.cursor()
-            match_time = datetime.datetime.now()
+            match_time = datetime.datetime.now()  # Corrected this line
             c.execute("INSERT INTO match_info (name, match_time) VALUES (%s, %s)", (name, match_time))
             conn.commit()
             conn.close()

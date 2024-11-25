@@ -100,6 +100,7 @@ class ReassignManagerForm(forms.Form):
         new_manager = self.cleaned_data['new_manager']
         logger.info(f"Manager reassigned: {user.username} to {new_manager.username}")
         return new_manager
+from datetime import timedelta
 
 
 # varias evidencia, solo tres extensiones, verifica peso
@@ -155,7 +156,7 @@ class JustificanteForm(forms.ModelForm):
             raise forms.ValidationError('La fecha no puede ser mayor a la fecha actual.')
 
         # Calcular la fecha límite (hace 15 días desde la fecha actual)
-        fecha_limite = fecha_actual - time(days=15)
+        fecha_limite = fecha_actual - timedelta(days=15)
 
         # Validar que la fecha no sea anterior a los últimos 15 días
         if fecha < fecha_limite:
