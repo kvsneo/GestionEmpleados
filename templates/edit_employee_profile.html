@@ -3,49 +3,49 @@
 {% block title %}Editar Perfil{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-info text-white text-center">
-                    <h3>Editar Perfil de {{ user.username }}</h3>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        <!-- Si el formulario tiene errores, mostrar una alerta -->
-                        {% if form.errors %}
-                            <div class="alert alert-danger">
-                                <strong>Hay errores en el formulario. Corrígelos y vuelve a intentarlo.</strong>
-                            </div>
-                        {% endif %}
-                        
-                        <!-- Renderizar los campos del formulario -->
-                        <div class="mb-3">
-                            {% for field in form %}
-                                <div class="mb-3">
-                                    {{ field.label_tag }}
-                                    {{ field }}
-                                    {% if field.errors %}
-                                        <div class="text-danger small">
-                                            {{ field.errors|striptags }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
-                        </div>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white text-center">
+                        <h3>Editar Perfil de {{ user.username }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
 
-                        <div class="d-flex justify-content-between">
-                            <button type="submit" class="btn btn-success">Guardar cambios</button>
-                            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Regresar</a>
-                        </div>
-                    </form>
+                            <!-- Si el formulario tiene errores, mostrar una alerta -->
+                            {% if form.errors %}
+                                <div class="alert alert-danger">
+                                    <strong>Hay errores en el formulario. Corrígelos y vuelve a intentarlo.</strong>
+                                </div>
+                            {% endif %}
+
+                            <!-- Renderizar los campos del formulario -->
+                            <div class="mb-3">
+                                {% for field in form %}
+                                    <div class="mb-3">
+                                        {{ field.label_tag }}
+                                        {{ field }}
+                                        {% if field.errors %}
+                                            <div class="text-danger small">
+                                                {{ field.errors|striptags }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <button type="submit" class="btn btn-success">Guardar cambios</button>
+                                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Regresar</a>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
 
 <style>

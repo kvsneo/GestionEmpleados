@@ -1,11 +1,14 @@
-from datetime import timezone
+from datetime import timedelta, timezone
 
 from django import forms
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
 from django.utils import timezone
 
 from logging_config import logger
 from .models import CustomUser, Justificante
+
+User = get_user_model()
 
 
 class AdminCreationForm(UserCreationForm):
@@ -102,9 +105,6 @@ class ReassignManagerForm(forms.Form):
         return new_manager
 
 
-from datetime import timedelta
-
-
 # varias evidencia, solo tres extensiones, verifica peso
 class JustificanteForm(forms.ModelForm):
     class Meta:
@@ -188,18 +188,12 @@ class EmployeePasswordChangeForm(PasswordChangeForm):
     )
 
 
-from django import forms
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-
-
 class ScheduleForm(forms.Form):
     MONTH_CHOICES = [
-        ('0000-01-01', 'January'), ('0000-02-01', 'February'), ('0000-03-01', 'March'),
-        ('0000-04-01', 'April'), ('0000-05-01', 'May'), ('0000-06-01', 'June'),
-        ('0000-07-01', 'July'), ('0000-08-01', 'August'), ('0000-09-01', 'September'),
-        ('0000-10-01', 'October'), ('0000-11-01', 'November'), ('0000-12-01', 'December')
+        ('0000-01-00', 'January'), ('0000-02-00', 'February'), ('0000-03-00', 'March'),
+        ('0000-04-00', 'April'), ('0000-05-00', 'May'), ('0000-06-00', 'June'),
+        ('0000-07-00', 'July'), ('0000-08-00', 'August'), ('0000-09-00', 'September'),
+        ('0000-10-00', 'October'), ('0000-11-00', 'November'), ('0000-12-00', 'December')
     ]
 
     SCHEDULE_CHOICES = [

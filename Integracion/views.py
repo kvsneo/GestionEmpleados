@@ -1,23 +1,37 @@
-from datetime import datetime
-from datetime import timedelta
+import base64
+import json
+import os
+import random
+import string
+from datetime import datetime, timedelta
 
+import cv2
+import face_recognition
+import mysql.connector
+import numpy as np
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
+from django.db.models import Count
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from logging_config import logger
 from .Reconocimineto.IndexarBaseUsuarios import cargar_img_conocidad_directorio
+from .Reconocimineto.ReconocimientoUsuarios import obtener_rostros_conocidos, comparar_rostros
 from .admin import admin_required, admin_or_manager_required
 from .forms import AdminCreationForm, ManagerCreationForm, EmployeeCreationForm, UserEditForm, ReassignManagerForm, \
-    JustificanteForm, EmployeeProfileForm, EmployeePasswordChangeForm, ScheduleForm
-from .models import EmployeeSchedule, CustomUser, Justificante, JustificanteArchivo
+    JustificanteForm, EmployeeProfileForm, EmployeePasswordChangeForm, ScheduleForm, PasswordResetRequestForm, \
+    PasswordResetVerifyForm
+from .models import EmployeeSchedule, Justificante, JustificanteArchivo, asistencia, CustomUser
 
 BASE_DIR1 = 'UsuariosImagenes'
 
@@ -223,6 +237,7 @@ def get_remaining_images(request):
     return JsonResponse({'remaining_images': remaining_images})
 
 
+@login_required
 @csrf_exempt
 def save_image(request):
     if request.method == 'POST':
@@ -265,6 +280,7 @@ def save_image(request):
 
 
 @login_required
+@admin_or_manager_required
 def index_photos(request):
     if request.method == 'POST':
         if cache.get('is_indexing'):
@@ -589,6 +605,7 @@ def change_password(request):
 
 
 @login_required
+@admin_or_manager_required
 def change_schedule(request):
     if request.method == 'POST':
         form = ScheduleForm(request.POST, user=request.user)
@@ -622,6 +639,7 @@ def change_schedule(request):
     return render(request, 'change_schedule.html', {'form': form})
 
 
+@login_required
 def buscar_imagenes(request):
     nombre_usuario = request.user.username
     ruta_usuario = os.path.join(settings.MEDIA_ROOT1, nombre_usuario)
@@ -655,25 +673,20 @@ def eliminar_imagen(request, nombre_usuario, nombre_imagen):
     return render(request, 'error.html', {'message': 'No se pudo eliminar la imagen.'})
 
 
-'''''
-def reconocimineto_usuarios(request):
-    known_faces, known_names = obtener_rostros_conocidos()
-    capturar_img_de_camara(known_faces, known_names)
-    return HttpResponse("Ejecutando Reconocimiento.")
-'''
-
-
 @login_required
+@admin_or_manager_required
 def reconocimiento_usuarios(request):
     return render(request, 'ReconocimientoUsuarios.html')
 
 
 @login_required
+@admin_or_manager_required
 def reportes(request):
     return render(request, "reportes.html")
 
 
 @login_required
+@admin_or_manager_required
 def reporte_justificantes(request):
     if request.user.role not in ['admin', 'manager']:
         messages.error(request, 'No tienes permiso para acceder a esta página.')
@@ -742,6 +755,8 @@ def reporte_justificantes(request):
     return render(request, 'reporte_justificantes.html', context)
 
 
+@login_required
+@admin_or_manager_required
 def reporte_solicitudes(request):
     empleados = CustomUser.objects.none()
     if request.user.is_manager():
@@ -800,12 +815,6 @@ def reporte_solicitudes(request):
         'aceptados_count': aceptados_count,
         'rechazados_count': rechazados_count
     })
-
-
-import cv2
-import face_recognition
-import mysql.connector
-import numpy as np
 
 
 def obtener_rostros_conocidos(db_name='basegestionempleados'):
@@ -875,11 +884,6 @@ def capturar_img_de_camara(known_faces, known_names):
     cv2.destroyAllWindows()
 
 
-import random
-import string
-from .forms import PasswordResetRequestForm, PasswordResetVerifyForm
-
-
 def generate_reset_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
@@ -916,7 +920,7 @@ def password_reset_verify(request):
         if form.is_valid():
             email = form.cleaned_data['email']
             reset_code = form.cleaned_data['reset_code']
-            new_password = form.cleaned_data['Nueva_Clave']
+            new_password = form.cleaned_data['new_password1']
             user = CustomUser.objects.filter(email=email, reset_code=reset_code).first()
             if user:
                 user.set_password(new_password)
@@ -931,14 +935,7 @@ def password_reset_verify(request):
     return render(request, 'password_reset_verify.html', {'form': form})
 
 
-import base64
-import json
-import os
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from .Reconocimineto.ReconocimientoUsuarios import obtener_rostros_conocidos, comparar_rostros
-
-
+@login_required
 @csrf_exempt
 def save_imagee(request):
     if request.method == 'POST':
@@ -969,3 +966,179 @@ def save_imagee(request):
 
         return JsonResponse({'message': message})
     return JsonResponse({'status': 'error'}, status=400)
+
+
+@login_required
+@admin_or_manager_required
+def reporte_inasistencias(request):
+    empleados = CustomUser.objects.filter(manager=request.user)
+
+    cuatrimestres = {
+        '1': (1, 4),  # Enero - Abril
+        '2': (5, 8),  # Mayo - Agosto
+        '3': (9, 12),  # Septiembre - Diciembre
+    }
+
+    inasistencias = []
+    total_inasistencias = 0  # Variable para el total de inasistencias
+    empleado_seleccionado = None
+
+    current_year = now().year
+    year_range = range(2020, current_year + 1)
+
+    if request.method == "GET":
+        empleado_id = request.GET.get('empleado', 'all')
+        cuatrimestre = request.GET.get('cuatrimestre')
+        year = request.GET.get('year', current_year)
+
+        if cuatrimestre and year:
+            start_month, end_month = cuatrimestres.get(cuatrimestre, (1, 4))
+            start_date = datetime(int(year), start_month, 1).date()
+
+            if end_month == 12:
+                end_date = datetime(int(year), end_month, 31).date()
+            else:
+                end_date = datetime(int(year), end_month + 1, 1).date() - timedelta(days=1)
+
+            # Consulta las inasistencias por empleado
+            query = asistencia.objects.filter(date__range=(start_date, end_date), status='sn')
+            if empleado_id != 'all':
+                query = query.filter(employee=empleado_id)
+
+                try:
+                    empleado_seleccionado = empleados.get(username=empleado_id)
+                except ObjectDoesNotExist:
+                    empleado_seleccionado = None  # Manejo del error si no se encuentra el empleado
+            else:
+                query = query.filter(employee__in=empleados.values_list('username', flat=True))
+
+            # Obtener las inasistencias con la fecha y hora
+            inasistencias = query.values('employee', 'date', 'hora', 'status').annotate(total=Count('id'))
+
+            # Contamos el total de inasistencias
+            total_inasistencias = sum([inasistencia['total'] for inasistencia in inasistencias])
+
+    context = {
+        'empleados': empleados,
+        'inasistencias': inasistencias,
+        'empleado_seleccionado': empleado_seleccionado,
+        'cuatrimestre': cuatrimestre,
+        'year': year,
+        'year_range': year_range,
+        'total_inasistencias': total_inasistencias,  # Se pasa el total al contexto
+    }
+    return render(request, 'reporte_inasistencias.html', context)
+
+
+@login_required
+def ver_horarios(request):
+    user = request.user
+    if user.role == 'manager':
+        # Filtrar horarios solo de los empleados asociados al gerente
+        empleados = CustomUser.objects.filter(manager=user)
+        horarios = EmployeeSchedule.objects.filter(employee__in=empleados)
+    elif user.role == 'admin':
+        # Mostrar horarios de todos los empleados
+        horarios = EmployeeSchedule.objects.all()
+    elif user.role == 'employee':
+        # Mostrar solo el horario del empleado
+        horarios = EmployeeSchedule.objects.filter(employee=user)
+    else:
+        # Si no es gerente, admin ni empleado, no tiene acceso
+        return render(request, 'error.html', {'message': 'No tienes acceso a esta página.'})
+
+    return render(request, 'ver_horarios.html', {'horarios': horarios})
+
+
+@login_required
+def reporte_porcentajes_asistencias(request):
+    # Obtener el usuario actual
+    user = request.user
+
+    # Filtrar asistencias según el rol del usuario
+    if user.role == 'manager':
+        empleados_asociados = CustomUser.objects.filter(manager=user)
+        asistencias_qs = asistencia.objects.filter(employee__in=empleados_asociados.values_list('username', flat=True))
+    else:
+        asistencias_qs = asistencia.objects.all()
+
+    current_year = now().year
+    year_range = range(2020, current_year + 1)
+
+    # Obtener el año desde la solicitud o usar el año actual como predeterminado
+    year = request.GET.get('year', current_year)
+    year = int(year)
+
+    asistencia_data = []
+    total_asistencias_anual = 0
+    total_inasistencias_anual = 0
+    total_justificadas_anual = 0
+    total_retardos_anual = 0
+    total_registros_anual = 0
+
+    # Iterar por los 12 meses del año seleccionado
+    for month in range(1, 13):
+        # Calcular el rango de fechas del mes actual
+        start_date = datetime(year, month, 1).date()
+        end_date = (datetime(year, month + 1, 1) - timedelta(days=1)).date() if month < 12 else datetime(year, 12,
+                                                                                                         31).date()
+
+        # Contar las asistencias, inasistencias, justificadas y retardos
+        total = asistencias_qs.filter(date__range=(start_date, end_date)).count()
+        asistencias = asistencias_qs.filter(date__range=(start_date, end_date), status='A').count()
+        inasistencias = asistencias_qs.filter(date__range=(start_date, end_date), status='sn').count()
+        justificadas = asistencias_qs.filter(date__range=(start_date, end_date), status='J').count()
+        retardos = asistencias_qs.filter(date__range=(start_date, end_date), status='R').count()
+
+        # Verificar si hay registros para calcular porcentajes
+        if total > 0:
+            asistencia_percentage = (asistencias / total) * 100
+            inasistencia_percentage = (inasistencias / total) * 100
+            justificada_percentage = (justificadas / total) * 100
+            retardo_percentage = (retardos / total) * 100
+        else:
+            asistencia_percentage = 0
+            inasistencia_percentage = 0
+            justificada_percentage = 0
+            retardo_percentage = 0
+
+        asistencia_data.append({
+            'month': start_date.strftime('%B'),  # Nombre del mes
+            'asistencias': round(asistencia_percentage, 2),
+            'inasistencias': round(inasistencia_percentage, 2),
+            'justificadas': round(justificada_percentage, 2),
+            'retardos': round(retardo_percentage, 2),
+        })
+
+        # Sumar los valores totales para el cálculo anual
+        total_asistencias_anual += asistencias
+        total_inasistencias_anual += inasistencias
+        total_justificadas_anual += justificadas
+        total_retardos_anual += retardos
+        total_registros_anual += total
+
+    # Calcular porcentajes anuales
+    if total_registros_anual > 0:
+        asistencia_anual_percentage = (total_asistencias_anual / total_registros_anual) * 100
+        inasistencia_anual_percentage = (total_inasistencias_anual / total_registros_anual) * 100
+        justificada_anual_percentage = (total_justificadas_anual / total_registros_anual) * 100
+        retardo_anual_percentage = (total_retardos_anual / total_registros_anual) * 100
+    else:
+        asistencia_anual_percentage = 0
+        inasistencia_anual_percentage = 0
+        justificada_anual_percentage = 0
+        retardo_anual_percentage = 0
+
+    context = {
+        'year': year,
+        'year_range': year_range,
+        'asistencia_data': asistencia_data,
+        'anual_totals': {
+            'asistencias': round(asistencia_anual_percentage, 2),
+            'inasistencias': round(inasistencia_anual_percentage, 2),
+            'justificadas': round(justificada_anual_percentage, 2),
+            'retardos': round(retardo_anual_percentage, 2),
+        },
+    }
+
+    return render(request, 'reporte_porcentajes.html', context)

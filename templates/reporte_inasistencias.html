@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1 class="mb-4">Reporte de Inasistencias</h1>
+
+        <!-- Formulario de filtros (será ocultado en la vista de impresión) -->
+        <form method="get" class="mb-4" id="filterForm">
+            <div class="row" id="filterFields">
+                <div class="col-md-4">
+                    <label for="empleado" class="form-label">Empleado:</label>
+                    <select name="empleado" id="empleado" class="form-select">
+                        <option value="all" {% if empleado_seleccionado is None %}selected{% endif %}>Todos</option>
+                        {% for empleado in empleados %}
+                            <option value="{{ empleado.username }}"
+                                    {% if empleado.username == empleado_seleccionado.username %}selected{% endif %}>
+                                {{ empleado.first_name }} {{ empleado.last_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="cuatrimestre" class="form-label">Cuatrimestre:</label>
+                    <select name="cuatrimestre" id="cuatrimestre" class="form-select">
+                        <option value="1" {% if cuatrimestre == '1' %}selected{% endif %}>Enero - Abril</option>
+                        <option value="2" {% if cuatrimestre == '2' %}selected{% endif %}>Mayo - Agosto</option>
+                        <option value="3" {% if cuatrimestre == '3' %}selected{% endif %}>Septiembre - Diciembre
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="year" class="form-label">Año:</label>
+                    <select name="year" id="year" class="form-select">
+                        {% for year_option in year_range %}
+                            <option value="{{ year_option }}"
+                                    {% if year_option == year %}selected{% endif %}>{{ year_option }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Filtrar</button>
+        </form>
+
+        <!-- Tabla de inasistencias -->
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Empleado</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Estado</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for inasistencia in inasistencias %}
+                <tr>
+                    <td>{{ inasistencia.employee }}</td>
+                    <td>{{ inasistencia.date }}</td>
+                    <td>{{ inasistencia.hora }}</td>
+                    <td>
+                        {% if inasistencia.status == 'sn' %}
+                            <span class="badge bg-danger">No Asistió</span>
+                        {% elif inasistencia.status == 'a' %}
+                            <span class="badge bg-success">Asistió</span>
+                        {% elif inasistencia.status == 'r' %}
+                            <span class="badge bg-warning">Retrasado</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">No hay inasistencias registradas para los filtros
+                        seleccionados.
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="mt-3">
+            <strong>Total de inasistencias: </strong> {{ total_inasistencias }}
+        </div>
+
+        <!-- Botón para imprimir el reporte -->
+        <button class="btn btn-primary" id="printButton">Imprimir Reporte</button>
+    </div>
+
+    <!-- Botón de regresar -->
+    <div class="mt-4" id="backButton">
+        <a href="{% url 'reportes' %}" class="btn btn-secondary btn-lg">Regresar</a>
+    </div>
+
+    <script>
+        // Función para imprimir la página
+        document.getElementById('printButton').addEventListener('click', function () {
+            window.print();  // Abre el cuadro de diálogo de impresión del navegador
+        });
+    </script>
+
+    <!-- Estilos para ocultar elementos en la vista de impresión -->
+    <style>
+        @media print {
+            #filterFields, #filterForm, #backButton, #printButton {
+                display: none; /* Oculta los filtros, botones y formularios en la vista de impresión */
+            }
+        }
+    </style>
+
+{% endblock %}

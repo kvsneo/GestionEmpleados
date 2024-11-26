@@ -3,94 +3,104 @@
 {% block title %}Reportes de Solicitudes{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2 class="text-center fw-bold mb-4">Reporte de Justificantes</h2>
+    <div class="container mt-5">
+        <h2 class="text-center fw-bold mb-4">Reporte de Justificantes</h2>
 
-    <!-- Mostrar mensajes si es un POST -->
-    {% if request.method == 'POST' %}
-        {% if messages %}
-            <div class="mt-3">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            </div>
+        <!-- Mostrar mensajes si es un POST -->
+        {% if request.method == 'POST' %}
+            {% if messages %}
+                <div class="mt-3">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         {% endif %}
-    {% endif %}
 
-    <!-- Formulario de filtros -->
-    <form method="post" class="mb-4">
-        {% csrf_token %}
-        <div class="row g-3">
-            <!-- Selección del Empleado -->
-            <div class="col-md-4">
-                <label for="employee" class="form-label">Empleado:</label>
-                <select name="employee" id="employee" class="form-select">
-                    <option value="">Selecciona un empleado</option>
-                    {% for empleado in empleados %}
-                        <option value="{{ empleado.id }}"
-                                {% if request.POST.employee == empleado.id|stringformat:"s" %}selected{% endif %}>{{ empleado.get_full_name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+        <!-- Formulario de filtros -->
+        <form method="post" class="mb-4">
+            {% csrf_token %}
+            <div class="row g-3">
+                <!-- Selección del Empleado -->
+                <div class="col-md-4">
+                    <label for="employee" class="form-label">Empleado:</label>
+                    <select name="employee" id="employee" class="form-select">
+                        <option value="">Selecciona un empleado</option>
+                        {% for empleado in empleados %}
+                            <option value="{{ empleado.id }}"
+                                    {% if request.POST.employee == empleado.id|stringformat:"s" %}selected{% endif %}>{{ empleado.get_full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <!-- Selección del Mes -->
-            <div class="col-md-4">
-                <label for="month" class="form-label">Mes:</label>
-                <select name="month" id="month" class="form-select">
-                    <option value="January" {% if request.POST.month == "January" %}selected{% endif %}>Enero</option>
-                    <option value="February" {% if request.POST.month == "February" %}selected{% endif %}>Febrero</option>
-                    <option value="March" {% if request.POST.month == "March" %}selected{% endif %}>Marzo</option>
-                    <option value="April" {% if request.POST.month == "April" %}selected{% endif %}>Abril</option>
-                    <option value="May" {% if request.POST.month == "May" %}selected{% endif %}>Mayo</option>
-                    <option value="June" {% if request.POST.month == "June" %}selected{% endif %}>Junio</option>
-                    <option value="July" {% if request.POST.month == "July" %}selected{% endif %}>Julio</option>
-                    <option value="August" {% if request.POST.month == "August" %}selected{% endif %}>Agosto</option>
-                    <option value="September" {% if request.POST.month == "September" %}selected{% endif %}>Septiembre</option>
-                    <option value="October" {% if request.POST.month == "October" %}selected{% endif %}>Octubre</option>
-                    <option value="November" {% if request.POST.month == "November" %}selected{% endif %}>Noviembre</option>
-                    <option value="December" {% if request.POST.month == "December" %}selected{% endif %}>Diciembre</option>
-                </select>
-            </div>
+                <!-- Selección del Mes -->
+                <div class="col-md-4">
+                    <label for="month" class="form-label">Mes:</label>
+                    <select name="month" id="month" class="form-select">
+                        <option value="January" {% if request.POST.month == "January" %}selected{% endif %}>Enero
+                        </option>
+                        <option value="February" {% if request.POST.month == "February" %}selected{% endif %}>Febrero
+                        </option>
+                        <option value="March" {% if request.POST.month == "March" %}selected{% endif %}>Marzo</option>
+                        <option value="April" {% if request.POST.month == "April" %}selected{% endif %}>Abril</option>
+                        <option value="May" {% if request.POST.month == "May" %}selected{% endif %}>Mayo</option>
+                        <option value="June" {% if request.POST.month == "June" %}selected{% endif %}>Junio</option>
+                        <option value="July" {% if request.POST.month == "July" %}selected{% endif %}>Julio</option>
+                        <option value="August" {% if request.POST.month == "August" %}selected{% endif %}>Agosto
+                        </option>
+                        <option value="September" {% if request.POST.month == "September" %}selected{% endif %}>
+                            Septiembre
+                        </option>
+                        <option value="October" {% if request.POST.month == "October" %}selected{% endif %}>Octubre
+                        </option>
+                        <option value="November" {% if request.POST.month == "November" %}selected{% endif %}>
+                            Noviembre
+                        </option>
+                        <option value="December" {% if request.POST.month == "December" %}selected{% endif %}>
+                            Diciembre
+                        </option>
+                    </select>
+                </div>
 
-            <!-- Selección del Año -->
-            <div class="col-md-4">
-                <label for="year" class="form-label">Año:</label>
-                <select name="year" id="year" class="form-select">
-                    <option value="">Selecciona un año</option>
-                    {% for year in years_range %}
-                        <option value="{{ year }}"
-                                {% if request.POST.year == year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
-                    {% endfor %}
-                </select>
+                <!-- Selección del Año -->
+                <div class="col-md-4">
+                    <label for="year" class="form-label">Año:</label>
+                    <select name="year" id="year" class="form-select">
+                        <option value="">Selecciona un año</option>
+                        {% for year in years_range %}
+                            <option value="{{ year }}"
+                                    {% if request.POST.year == year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
+            <div class="mt-3 text-center">
+                <button type="submit" class="btn btn-primary btn-lg">Filtrar</button>
+            </div>
+        </form>
+
+        <!-- Botón de impresión -->
+        <div class="text-center mb-4">
+            <button id="printButton" class="btn btn-success btn-lg">Imprimir Reporte</button>
         </div>
-        <div class="mt-3 text-center">
-            <button type="submit" class="btn btn-primary btn-lg">Filtrar</button>
-        </div>
-    </form>
 
-    <!-- Botón de impresión -->
-    <div class="text-center mb-4">
-        <button id="printButton" class="btn btn-success btn-lg">Imprimir Reporte</button>
-    </div>
-
-    <!-- Resultados -->
-    {% if request.method == 'POST' %}
-        {% if report_data %}
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover">
-                    <thead class="thead-dark">
+        <!-- Resultados -->
+        {% if request.method == 'POST' %}
+            {% if report_data %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover">
+                        <thead class="thead-dark">
                         <tr>
                             <th>Motivo</th>
                             <th>Fecha</th>
                             <th>Estado</th>
                             <th>Empleado</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                        </thead>
+                        <tbody>
                         {% for justificante in report_data %}
                             <tr>
                                 <td>{{ justificante.motivo }}</td>
@@ -105,35 +115,35 @@
                                 <td>{{ justificante.empleado__first_name }} {{ justificante.empleado__middle_name }} {{ justificante.empleado__last_name }}</td>
                             </tr>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
         {% endif %}
-    {% endif %}
 
-    <h3 class="mt-4">Totales</h3>
-    <ul>
-        <li><strong>Aceptados:</strong> {{ aceptados_count }}</li>
-        <li><strong>Rechazados:</strong> {{ rechazados_count }}</li>
-    </ul>
+        <h3 class="mt-4">Totales</h3>
+        <ul>
+            <li><strong>Aceptados:</strong> {{ aceptados_count }}</li>
+            <li><strong>Rechazados:</strong> {{ rechazados_count }}</li>
+        </ul>
 
-    <div class="mt-4">
-        <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-lg">Regresar</a>
+        <div class="mt-4">
+            <a href="{% url 'reportes' %}" class="btn btn-secondary btn-lg">Regresar</a>
+        </div>
     </div>
-</div>
 
-<style>
-    @media print {
-        #printButton, button[type="submit"], .btn-secondary {
-            display: none; /* Oculta los botones durante la impresión */
+    <style>
+        @media print {
+            #printButton, button[type="submit"], .btn-secondary {
+                display: none; /* Oculta los botones durante la impresión */
+            }
         }
-    }
-</style>
+    </style>
 
-<script>
-    document.getElementById("printButton").addEventListener("click", function () {
-        window.print();
-    });
-</script>
+    <script>
+        document.getElementById("printButton").addEventListener("click", function () {
+            window.print();
+        });
+    </script>
 
 {% endblock %}

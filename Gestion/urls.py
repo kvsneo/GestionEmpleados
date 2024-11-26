@@ -65,6 +65,10 @@ urlpatterns = [
     path('password_reset_verify/', views.password_reset_verify, name='password_reset_verify'),
 
     path('save_imagee/', views.save_imagee, name='save_imagee'),
+    path('reporte-inasistencias/', views.reporte_inasistencias, name='reporte_inasistencias'),
+    path('reporte/porcentajes/', views.reporte_porcentajes_asistencias, name='reporte_porcentajes_asistencias'),
+
+    path('horarios/', views.ver_horarios, name='horarios'),
 
 ]
 if settings.DEBUG:

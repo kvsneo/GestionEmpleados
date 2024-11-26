@@ -122,43 +122,43 @@
     </style>
 </head>
 <body>
-    <h1>Reconocimiento de Usuarios</h1>
-    <div class="instructions">
-       Mira directamente a la cámara
-    </div>
-    <div class="camera-container">
-        <!-- Selector de cámaras -->
-        <select id="cameraSelect"></select>
+<h1>Reconocimiento de Usuarios</h1>
+<div class="instructions">
+    Mira directamente a la cámara
+</div>
+<div class="camera-container">
+    <!-- Selector de cámaras -->
+    <select id="cameraSelect"></select>
 
-        <!-- Vista previa de la cámara -->
-        <video id="video" autoplay></video>
+    <!-- Vista previa de la cámara -->
+    <video id="video" autoplay></video>
 
-        <!-- Botón de captura -->
-        <button id="captureButton">Capturar Imagen</button>
+    <!-- Botón de captura -->
+    <button id="captureButton">Capturar Imagen</button>
 
-        <!-- Canvas para capturar la imagen -->
-        <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+    <!-- Canvas para capturar la imagen -->
+    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
 
-        <!-- Imagen capturada -->
-        <img id="capturedImage" alt="Captured Image">
-    </div>
+    <!-- Imagen capturada -->
+    <img id="capturedImage" alt="Captured Image">
+</div>
 
-    <!-- Resultado del reconocimiento -->
-    <div id="result"></div>
+<!-- Resultado del reconocimiento -->
+<div id="result"></div>
 
-    <!-- Mensaje flotante -->
-    <div id="floatingMessage" class="floating-message"></div>
+<!-- Mensaje flotante -->
+<div id="floatingMessage" class="floating-message"></div>
 
-    <div class="instructions">
-       Por favor, asegúrate de:<br>
+<div class="instructions">
+    Por favor, asegúrate de:<br>
 
-Retirar objetos que puedan cubrir tu rostro, como gorras, lentes oscuros, o mascarillas.<br>
-Mantener una posición recta frente a la cámara para facilitar la detección.
-    </div>
+    Retirar objetos que puedan cubrir tu rostro, como gorras, lentes oscuros, o mascarillas.<br>
+    Mantener una posición recta frente a la cámara para facilitar la detección.
+</div>
 
-    <a href="{% url 'dashboard' %}" class="btn">Regresar al Dashboard</a>
+<a href="{% url 'dashboard' %}" class="btn">Regresar al Dashboard</a>
 
-    <script>
+<script>
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const capturedImage = document.getElementById('capturedImage');
@@ -242,6 +242,6 @@ Mantener una posición recta frente a la cámara para facilitar la detección.
             floatingMessage.style.display = 'none';
         }, 5000);
     }
-    </script>
+</script>
 </body>
 </html>

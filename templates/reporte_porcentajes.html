@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Reporte de Asistencias{% endblock %}
+
+{% block content %}
+    <div class="container my-5">
+        <h1 class="mb-4 text-center">Reporte de Asistencias - {{ year }}</h1>
+
+        <form method="get" action="{% url 'reporte_porcentajes_asistencias' %}" class="row g-3 align-items-center mb-4">
+            <div class="col-auto">
+                <label for="year" class="form-label">Seleccionar año:</label>
+            </div>
+            <div class="col-auto">
+                <select name="year" id="year" class="form-select">
+                    {% for y in year_range %}
+                        <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Generar Reporte</button>
+                <button id="printButton" class="btn btn-success btn-lg">Imprimir Reporte</button>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered text-center">
+                <thead class="table-dark">
+                <tr>
+                    <th>Mes</th>
+                    <th>% Asistencias</th>
+                    <th>% Inasistencias</th>
+                    <th>% Justificadas</th>
+                    <th>% Retardos</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for data in asistencia_data %}
+                    <tr>
+                        <td>{{ data.month }}</td>
+                        <td>{{ data.asistencias }}%</td>
+                        <td>{{ data.inasistencias }}%</td>
+                        <td>{{ data.justificadas }}%</td>
+                        <td>{{ data.retardos }}%</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                <tr class="fw-bold">
+                    <td>Anual</td>
+                    <td>{{ anual_totals.asistencias }}%</td>
+                    <td>{{ anual_totals.inasistencias }}%</td>
+                    <td>{{ anual_totals.justificadas }}%</td>
+                    <td>{{ anual_totals.retardos }}%</td>
+                </tr>
+                </tfoot>
+
+
+            </table>
+        </div>
+    </div>
+    <div class="mt-4">
+        <a href="{% url 'reportes' %}" class="btn btn-secondary btn-lg">Regresar</a>
+    </div>
+    </div>
+
+    <style>
+        @media print {
+            #printButton, button[type="submit"], .btn-secondary {
+                display: none; /* Oculta los botones durante la impresión */
+            }
+        }
+    </style>
+
+    <script>
+        document.getElementById("printButton").addEventListener("click", function () {
+            window.print();
+        });
+    </script>
+{% endblock %}

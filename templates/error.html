@@ -16,6 +16,7 @@
             font-family: 'Arial', sans-serif;
             text-align: center;
         }
+
         .card {
             background-color: rgba(255, 255, 255, 0.9);
             border: none;
@@ -25,15 +26,18 @@
             width: 100%;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
+
         h1 {
             font-size: 2.5rem;
             color: #dc3545; /* Rojo de error */
             margin-bottom: 1rem;
         }
+
         p {
             font-size: 1.2rem;
             margin-bottom: 1.5rem;
         }
+
         .countdown {
             font-size: 1.5rem;
             font-weight: bold;
@@ -41,7 +45,8 @@
     </style>
     <script>
         // Cuenta regresiva y redirección al dashboard
-        let countdown = 10; 
+        let countdown = 10;
+
         function updateCountdown() {
             document.getElementById('countdown').innerText = countdown;
             if (countdown <= 0) {
@@ -51,15 +56,16 @@
                 setTimeout(updateCountdown, 1000);
             }
         }
+
         window.onload = updateCountdown;
     </script>
 </head>
 <body>
-    <div class="card">
-        <h1>Error</h1>
-        <p>{{ message }}</p>
-        <p class="countdown">Serás redirigido al panel en <span id="countdown">10</span> segundos...</p>
-        <p>Si no eres redirigido automáticamente, haz clic <a href="{% url 'dashboard' %}" class="text-danger">aquí</a>.</p>
-    </div>
+<div class="card">
+    <h1>Error</h1>
+    <p>{{ message }}</p>
+    <p class="countdown">Serás redirigido al panel en <span id="countdown">10</span> segundos...</p>
+    <p>Si no eres redirigido automáticamente, haz clic <a href="{% url 'dashboard' %}" class="text-danger">aquí</a>.</p>
+</div>
 </body>
 </html>

@@ -1,115 +1,116 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1>Editar Justificante</h1>
+    <div class="container mt-5">
+        <h1>Editar Justificante</h1>
 
-    <!-- Mensajes de éxito o error -->
-    {% if messages %}
-        <div class="my-3">
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <!-- Errores del formulario -->
-    {% if form.errors %}
-        <div class="alert alert-danger">
-            <ul>
-                {% for error in form.non_field_errors %}
-                    <li>{{ error }}</li>
+        <!-- Mensajes de éxito o error -->
+        {% if messages %}
+            <div class="my-3">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
                 {% endfor %}
-                {% for field in form %}
-                    {% if field.errors %}
-                        <li>
-                            <strong>{{ field.label }}:</strong>
-                            <ul>
-                                {% for error in field.errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                            </ul>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-        </div>
-    {% endif %}
+            </div>
+        {% endif %}
 
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
+        <!-- Errores del formulario -->
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    {% for field in form %}
+                        {% if field.errors %}
+                            <li>
+                                <strong>{{ field.label }}:</strong>
+                                <ul>
+                                    {% for error in field.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
             <div class="form-group">
                 <label for="motivo">Motivo</label>
-                <input type="text" class="form-control" id="motivo" name="motivo" value="{{ form.motivo.value }}" required>
+                <input type="text" class="form-control" id="motivo" name="motivo" value="{{ form.motivo.value }}"
+                       required>
             </div>
-            
+
             <div class="form-group">
                 <label for="fecha">Fecha</label>
                 <input type="date" class="form-control" id="fecha" name="fecha" value="{{ form.fecha.value }}" required>
             </div>
 
-        <h2>Subir Imagen</h2>
-        <div class="form-group">
-            {% if archivos_imagen %}
-                <div>
-                    <strong>Imagen actual:</strong>
-                    {% for archivo in archivos_imagen %}
-                        <p><a href="{{ archivo.archivo.url }}" target="_blank">Ver imagen</a></p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            {{ form.imagen }}
-        </div>
+            <h2>Subir Imagen</h2>
+            <div class="form-group">
+                {% if archivos_imagen %}
+                    <div>
+                        <strong>Imagen actual:</strong>
+                        {% for archivo in archivos_imagen %}
+                            <p><a href="{{ archivo.archivo.url }}" target="_blank">Ver imagen</a></p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {{ form.imagen }}
+            </div>
 
-        <h2>Subir PDF</h2>
-        <div class="form-group">
-            {% if archivos_pdf %}
-                <div>
-                    <strong>PDF actual:</strong>
-                    {% for archivo in archivos_pdf %}
-                        <p><a href="{{ archivo.archivo.url }}" target="_blank">Ver PDF</a></p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            {{ form.pdf }}
-        </div>
+            <h2>Subir PDF</h2>
+            <div class="form-group">
+                {% if archivos_pdf %}
+                    <div>
+                        <strong>PDF actual:</strong>
+                        {% for archivo in archivos_pdf %}
+                            <p><a href="{{ archivo.archivo.url }}" target="_blank">Ver PDF</a></p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {{ form.pdf }}
+            </div>
 
-        <h2>Subir Documento (DOC/DOCX)</h2>
-        <div class="form-group">
-            {% if archivos_documento %}
-                <div>
-                    <strong>Documento actual:</strong>
-                    {% for archivo in archivos_documento %}
-                        <p><a href="{{ archivo.archivo.url }}" target="_blank">Ver Documento</a></p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            {{ form.documento }}
-        </div>
+            <h2>Subir Documento (DOC/DOCX)</h2>
+            <div class="form-group">
+                {% if archivos_documento %}
+                    <div>
+                        <strong>Documento actual:</strong>
+                        {% for archivo in archivos_documento %}
+                            <p><a href="{{ archivo.archivo.url }}" target="_blank">Ver Documento</a></p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {{ form.documento }}
+            </div>
 
-        <button type="submit" class="btn btn-primary mt-3">Guardar cambios</button>
-    </form>
+            <button type="submit" class="btn btn-primary mt-3">Guardar cambios</button>
+        </form>
 
-    <p class="mt-3"><a href="{% url 'lista_justificantes' %}" class="btn btn-secondary">Volver</a></p>
-</div>
+        <p class="mt-3"><a href="{% url 'lista_justificantes' %}" class="btn btn-secondary">Volver</a></p>
+    </div>
 
-{% if messages %}
-<script>
-    // Verificar si hay un mensaje de éxito
-    {% for message in messages %}
-        {% if message.tags == 'success' %}
-            // Si es un mensaje de éxito, redirigir después de 3 segundos
-            setTimeout(function(){
-                window.location.href = "{% url 'lista_justificantes' %}";
-            }, 3000); // Retraso de 3 segundos
-        {% endif %}
-    {% endfor %}
-</script>
-{% endif %}
+    {% if messages %}
+        <script>
+            // Verificar si hay un mensaje de éxito
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                    // Si es un mensaje de éxito, redirigir después de 3 segundos
+                    setTimeout(function () {
+                        window.location.href = "{% url 'lista_justificantes' %}";
+                    }, 3000); // Retraso de 3 segundos
+                {% endif %}
+            {% endfor %}
+        </script>
+    {% endif %}
 
 {% endblock %}

@@ -1,8 +1,10 @@
 import os
+
 import cv2
 import face_recognition
 import mysql.connector
 import numpy as np
+
 
 def guardar_promedio_rostro_datos(name, encodings, photo_count, db_name='basegestionempleados'):
     try:
@@ -23,6 +25,7 @@ def guardar_promedio_rostro_datos(name, encodings, photo_count, db_name='baseges
     except Exception as e:
         print(f"Error in guardar_promedio_rostro_datos: {e}")
 
+
 def tecnica_training(image):
     try:
         augmented_images = [image]
@@ -34,6 +37,7 @@ def tecnica_training(image):
     except Exception as e:
         print(f"Error in tecnica_training: {e}")
         return []
+
 
 def cargar_img_conocidad_directorio(directory, db_name='basegestionempleados'):
     try:
@@ -78,6 +82,7 @@ def cargar_img_conocidad_directorio(directory, db_name='basegestionempleados'):
     except Exception as e:
         print(f"Error in cargar_img_conocidad_directorio: {e}")
         return []
+
 
 if __name__ == "__main__":
     try:

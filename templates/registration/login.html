@@ -14,6 +14,7 @@
             align-items: center;
             font-family: 'Arial', sans-serif;
         }
+
         .card {
             border: none;
             border-radius: 10px;
@@ -22,6 +23,7 @@
             width: 100%;
             margin: 15px;
         }
+
         .card-header {
             background-color: #ffc107; /* Amarillo */
             color: #fff;
@@ -31,16 +33,19 @@
             font-weight: bold;
             border-radius: 10px 10px 0 0;
         }
+
         .card-body {
             background: #fff;
             padding: 2rem;
             border-radius: 0 0 10px 10px;
         }
+
         .form-control {
             border-radius: 5px;
             padding: 0.75rem;
             font-size: 1rem;
         }
+
         .btn-primary {
             background-color: #007bff;
             border-color: #007bff;
@@ -48,17 +53,21 @@
             font-size: 1rem;
             border-radius: 5px;
         }
+
         .btn-primary:hover {
             background-color: #0056b3;
             border-color: #0056b3;
         }
+
         .alert-danger {
             font-size: 0.9rem;
         }
+
         .text-center {
             font-size: 1rem;
             color: #333;
         }
+
         @media (max-width: 768px) {
             .card {
                 width: 100%;
@@ -67,37 +76,38 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-4">
-                <div class="card shadow-sm">
-                    <div class="card-header">
-                      Iniciar Sesión
-                    </div>
-                    <div class="card-body">
-                        <h2 class="text-center mb-4">  Bienvenido</h2>
-                        <form method="post">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                {{ form.username.label_tag }}
-                                <input type="text" class="form-control" name="username" id="id_username" required>
-                            </div>
-                            <div class="mb-3">
-                                {{ form.password.label_tag }}
-                                <input type="password" class="form-control" name="password" id="id_password" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">Ingresar</button>
-                        </form>
-                        {% if form.errors %}
-                            <div class="alert alert-danger mt-3">
-                                Usuario o contraseña incorrectos.
-                            </div>
-                        {% endif %}
-                    <p class="text-center mt-3">¿Olvidaste tu Contraseña? <a href="{% url 'password_reset_request' %}">Recuperar</a></p>
-                    </div>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    Iniciar Sesión
+                </div>
+                <div class="card-body">
+                    <h2 class="text-center mb-4"> Bienvenido</h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ form.username.label_tag }}
+                            <input type="text" class="form-control" name="username" id="id_username" required>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.password.label_tag }}
+                            <input type="password" class="form-control" name="password" id="id_password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+                    </form>
+                    {% if form.errors %}
+                        <div class="alert alert-danger mt-3">
+                            Usuario o contraseña incorrectos.
+                        </div>
+                    {% endif %}
+                    <p class="text-center mt-3">¿Olvidaste tu Contraseña? <a href="{% url 'password_reset_request' %}">Recuperar</a>
+                    </p>
                 </div>
             </div>
         </div>
     </div>
+</div>
 </body>
 </html>

@@ -16,6 +16,7 @@
             align-items: center;
             padding: 20px;
         }
+
         .container {
             background-color: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
@@ -25,15 +26,18 @@
             max-width: 700px;
             text-align: center;
         }
+
         h1 {
             color: #4a4a4a;
         }
+
         video, canvas, img {
             margin: 10px auto;
             display: block;
             border: 2px solid #2575fc;
             border-radius: 5px;
         }
+
         button {
             background: linear-gradient(135deg, #6a11cb, #2575fc);
             border: none;
@@ -43,20 +47,24 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
         button:hover {
             background: linear-gradient(135deg, #2575fc, #6a11cb);
         }
+
         select {
             padding: 5px;
             border-radius: 5px;
             margin-bottom: 15px;
         }
+
         #countdown {
             font-weight: bold;
             font-size: 1.2rem;
             margin: 10px 0;
-             color: #ff5733;
+            color: #ff5733;
         }
+
         #notification {
             color: #dc3545;
             margin-top: 10px;
@@ -64,17 +72,17 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Capturar Fotografía</h1>
-        <select id="cameraSelect" class="form-select"></select>
-        <video id="video" width="640" height="480" autoplay></video>
-        <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
-        <img id="photo" alt="La foto capturada aparecerá aquí" style="display:none;"/>
-        <button id="startCapture">Iniciar Captura</button>
-        <p id="countdown"></p>
-        <p id="notification"></p>
-        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Regresar</a>
-    </div>
+<div class="container">
+    <h1>Capturar Fotografía</h1>
+    <select id="cameraSelect" class="form-select"></select>
+    <video id="video" width="640" height="480" autoplay></video>
+    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+    <img id="photo" alt="La foto capturada aparecerá aquí" style="display:none;"/>
+    <button id="startCapture">Iniciar Captura</button>
+    <p id="countdown"></p>
+    <p id="notification"></p>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Regresar</a>
+</div>
 
 <script>
     const video = document.getElementById('video');

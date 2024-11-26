@@ -12,73 +12,75 @@
     </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Indexar Fotografías de Usuarios</h1>
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Indexar Fotografías de Usuarios</h1>
         
-        <form method="post" id="indexForm">
-            {% csrf_token %}
-            <div class="text-center">
-                <button type="submit" id="indexButton" class="btn btn-primary">Indexar Fotografías</button>
-            </div>
-        </form>
-
-        <h2 class="mt-4">Usuarios Indexados</h2>
-        <ul>
-            {% for user in users %}
-                <li>{{ user.username }}</li>
-            {% endfor %}
-        </ul>
-
-        <div id="statusMessage"></div>
-        <div id="consoleMessages"></div>
-
-        <div id="loadingMessage" style="display: none;" class="alert alert-info mt-3">Espera, se están indexando nuevas imágenes...</div>
-
-        <!-- Alertas generales -->
-        <div id="alertsContainer">
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-info alert-custom" role="alert">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
+    <form method="post" id="indexForm">
+        {% csrf_token %}
+        <div class="text-center">
+            <button type="submit" id="indexButton" class="btn btn-primary">Indexar Fotografías</button>
         </div>
+    </form>
 
+    <h2 class="mt-4">Usuarios Indexados</h2>
+    <ul>
+        {% for user in users %}
+            <li>{{ user.username }}</li>
+        {% endfor %}
+    </ul>
+
+    <div id="statusMessage"></div>
+    <div id="consoleMessages"></div>
+
+    <div id="loadingMessage" style="display: none;" class="alert alert-info mt-3">Espera, se están indexando nuevas
+        imágenes...
     </div>
 
-    <script>
-        let isIndexing = false;
+    <!-- Alertas generales -->
+    <div id="alertsContainer">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-info alert-custom" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
 
-        window.addEventListener('beforeunload', function (event) {
-            if (isIndexing) {
-                event.preventDefault();
-                event.returnValue = '¿Estás seguro? Esto podría perjudicar el reconocimiento.';
-            }
-        });
+</div>
 
-        document.getElementById('indexForm').addEventListener('submit', function(event) {
+<script>
+    let isIndexing = false;
+
+    window.addEventListener('beforeunload', function (event) {
+        if (isIndexing) {
             event.preventDefault();
-            if (localStorage.getItem('isIndexing') === 'true') {
-                alert('Indexing is already in progress.');
-                return;
-            }
+            event.returnValue = '¿Estás seguro? Esto podría perjudicar el reconocimiento.';
+        }
+    });
 
-            const indexButton = document.getElementById('indexButton');
-            const loadingMessage = document.getElementById('loadingMessage');
-            indexButton.disabled = true; // Desactivar el botón
-            loadingMessage.style.display = 'block'; // Mostrar el mensaje de carga
-            isIndexing = true; // Indicar que la indexación está en curso
-            localStorage.setItem('isIndexing', 'true'); // Guardar el estado en localStorage
+    document.getElementById('indexForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        if (localStorage.getItem('isIndexing') === 'true') {
+            alert('Indexing is already in progress.');
+            return;
+        }
 
-            fetch("{% url 'index_photos' %}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({})
-            })
+        const indexButton = document.getElementById('indexButton');
+        const loadingMessage = document.getElementById('loadingMessage');
+        indexButton.disabled = true; // Desactivar el botón
+        loadingMessage.style.display = 'block'; // Mostrar el mensaje de carga
+        isIndexing = true; // Indicar que la indexación está en curso
+        localStorage.setItem('isIndexing', 'true'); // Guardar el estado en localStorage
+
+        fetch("{% url 'index_photos' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
             .then(response => response.json())
             .then(data => {
                 document.getElementById('statusMessage').innerText = data.message;
@@ -101,9 +103,9 @@
                 isIndexing = false; // Indicar que la indexación ha finalizado
                 localStorage.setItem('isIndexing', 'false'); // Actualizar el estado en localStorage
             });
-        });
-    </script>
+    });
+</script>
 
-    <a href="{% url 'dashboard' %}" class="btn btn-secondary mt-4">Regresar</a>
+<a href="{% url 'dashboard' %}" class="btn btn-secondary mt-4">Regresar</a>
 </body>
 </html>

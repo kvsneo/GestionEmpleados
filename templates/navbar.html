@@ -2,23 +2,23 @@
     <div class="container">
         <a class="navbar-brand fw-bold" href="/">Gestión de Empleados</a>
         <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
         >
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                
+
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                    <a href="/" class="nav-link active">Inicio</a>
-                </li>
+                        <a href="/" class="nav-link active">Inicio</a>
+                    </li>
                     {% if es_empleado %}
                         <li class="nav-item">
                             <a href="{% url 'edit_employee_profile' %}" class="nav-link">Editar Perfil</a>
@@ -31,8 +31,9 @@
                         <a class="nav-link text-danger" href="/logout">Cerrar Sesión</a>
                     </li>
                 {% else %}
-                    <<li class="nav-item">
-                    <a class="nav-link">Bienvenido!</a>
+                    <
+                    <li class="nav-item">
+                        <a class="nav-link">Bienvenido!</a>
                     </li>
                 {% endif %}
             </ul>

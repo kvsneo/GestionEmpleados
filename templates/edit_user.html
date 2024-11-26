@@ -3,29 +3,29 @@
 {% block title %}Editar Usuario{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1 class="mb-4">Editar Usuario</h1>
+    <div class="container mt-5">
+        <h1 class="mb-4">Editar Usuario</h1>
 
-    <form method="post" class="border p-4 rounded shadow-sm">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <div class="mt-3 d-flex justify-content-between">
-            <button type="submit" class="btn btn-primary">Guardar cambios</button>
-            <a href="{% url 'list_users' %}" class="btn btn-secondary">Cancelar</a>
-        </div>
-    </form>
-</div>
+        <form method="post" class="border p-4 rounded shadow-sm">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="mt-3 d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                <a href="{% url 'list_users' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var roleField = document.querySelector('[name="role"]');
-        var managerField = document.querySelector('[name="manager"]');
-        var userRole = "{{ form.instance.role }}";
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var roleField = document.querySelector('[name="role"]');
+            var managerField = document.querySelector('[name="manager"]');
+            var userRole = "{{ form.instance.role }}";
 
-        // Ocultar el campo de gerente si el usuario no es empleado
-        if (userRole !== 'employee') {
-            if (managerField) managerField.closest('.form-group').style.display = 'none';
-        }
-    });
-</script>
+            // Ocultar el campo de gerente si el usuario no es empleado
+            if (userRole !== 'employee') {
+                if (managerField) managerField.closest('.form-group').style.display = 'none';
+            }
+        });
+    </script>
 {% endblock %}

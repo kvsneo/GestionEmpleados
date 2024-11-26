@@ -33,6 +33,26 @@
             font-size: 2rem;
         }
 
+        /* Navbar Styling */
+        .navbar {
+            background-color: #000000;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #fff;
+        }
+
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            padding: 0 10px;
+        }
+
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+
         /* Button Styling */
         .btn {
             display: inline-block;
@@ -97,41 +117,50 @@
     </style>
 </head>
 <body>
-    <header>
-        <h2>Listado de Imágenes en {{ nombre_usuario }}</h2>
-        <div>
-            <a href="{% url 'dashboard' %}" class="btn">Regresar al Dashboard</a>
-            <a href="{% url 'capturarimagenes' %}" class="btn">Subir Imagen</a>
-        </div>
-    </header>
-    <main>
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Nombre de Imagen</th>
-                    <th>Imagen Almacenada</th>
-                    <th>Eliminación</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for imagen in imagenes %}
-                    <tr>
-                        <td>{{ imagen.numero }}</td>
-                        <td>{{ imagen.nombre }}</td>
-                        <td>
-                            <img src="{{ imagen.ruta }}" alt="{{ imagen.nombre }}" width="200">
-                        </td>
-                        <td>
-                            <form method="post" action="{% url 'EliminarImagen' nombre_usuario imagen.nombre %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger">Eliminar</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </main>
+<nav class="navbar">
+    <div>
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="{% url 'capturarimagenes' %}">Capturar Imagen</a>
+    </div>
+    <div>
+        <a href="{% url 'logout' %}">Logout</a>
+    </div>
+</nav>
+<header>
+    <h2>Listado de Imágenes en {{ nombre_usuario }}</h2>
+    <div>
+        <a href="{% url 'dashboard' %}" class="btn">Regresar al Dashboard</a>
+        <a href="{% url 'capturarimagenes' %}" class="btn">Subir Imagen</a>
+    </div>
+</header>
+<main>
+    <table>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Nombre de Imagen</th>
+            <th>Imagen Almacenada</th>
+            <th>Eliminación</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for imagen in imagenes %}
+            <tr>
+                <td>{{ imagen.numero }}</td>
+                <td>{{ imagen.nombre }}</td>
+                <td>
+                    <img src="{{ imagen.ruta }}" alt="{{ imagen.nombre }}" width="200">
+                </td>
+                <td>
+                    <form method="post" action="{% url 'EliminarImagen' nombre_usuario imagen.nombre %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</main>
 </body>
 </html>

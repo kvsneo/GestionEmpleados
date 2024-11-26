@@ -57,7 +57,7 @@
                     {{ empleado.username }} - {{ empleado.email }}
                     {% if is_admin %}
                         <span class="badge bg-secondary ms-2">
-                            Gerente: 
+                            Gerente:
                             {% if empleado.manager %}
                                 {{ empleado.manager.username }}
                             {% else %}
@@ -75,5 +75,5 @@
     {% else %}
         <p class="mt-2">No hay empleados registrados.</p>
     {% endif %}
-     <p class="mt-4"><a href="{% url 'dashboard' %}" class="btn btn-secondary">Regresar</a></p>
+    <p class="mt-4"><a href="{% url 'dashboard' %}" class="btn btn-secondary">Regresar</a></p>
 {% endblock %}

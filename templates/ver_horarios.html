@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Horarios de Empleados</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+            }
+
+            h1 {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+            }
+
+            table th, table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+
+            table th {
+                background-color: #f4f4f4;
+            }
+
+            .btn-container {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .btn {
+                display: inline-block;
+                padding: 10px 20px;
+                font-size: 16px;
+                color: #fff;
+                background-color: #007bff;
+                text-decoration: none;
+                border-radius: 5px;
+                border: none;
+                cursor: pointer;
+            }
+
+            .btn:hover {
+                background-color: #0056b3;
+            }
+        </style>
+    </head>
+    <body>
+
+
+    <h1>Horarios de Empleados</h1>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Empleado</th>
+            <th>Mes</th>
+            <th>Horario de Inicio</th>
+            <th>Horario de Fin</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for horario in horarios %}
+            <tr>
+                <td>{{ horario.employee.username }}</td>
+                <td>{{ horario.month }}</td>
+                <td>{{ horario.schedule_start }}</td>
+                <td>{{ horario.schedule_end }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <div class="btn-container">
+        <a href="{% url 'dashboard' %}" class="btn">Regresar al Dashboard</a>
+    </div>
+    </body>
+    </html>
+{% endblock %}
