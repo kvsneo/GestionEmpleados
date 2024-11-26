@@ -126,24 +126,23 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-#Usuarios Personalizados
+# Define el modelo de usuario personalizado
 AUTH_USER_MODEL = 'Integracion.CustomUser'
 
-# Rutas para Almacenamineto de Imagenes de Usuarios
+# Configura la URL y la ruta de almacenamiento para imágenes de usuarios
 MEDIA_URL1 = '/UsuariosImagenes/'
 MEDIA_ROOT1 = os.path.join(BASE_DIR, 'UsuariosImagenes')
 
-#Ruta para Almacenar Justificantes
+# Configura la URL y la ruta de almacenamiento para justificantes
 MEDIA_URL2 = '/justificantes/'
 MEDIA_ROOT2 = os.path.join(BASE_DIR, 'justificantes')
 
-#Rediccionamiento de Login
+# Configura las URLs de redireccionamiento para login y logout
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'  # Dónde redirigir después de iniciar sesión
-LOGOUT_REDIRECT_URL = 'login'    # Dónde redirigir después de cerrar sesión
+LOGIN_REDIRECT_URL = '/dashboard/'  # Redirige después de iniciar sesión
+LOGOUT_REDIRECT_URL = 'login'  # Redirige después de cerrar sesión
 
-
-#Configuracion de Correo
+# Configura el backend de correo y los detalles del servidor SMTP
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587

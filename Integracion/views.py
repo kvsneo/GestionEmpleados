@@ -36,11 +36,19 @@ from .models import EmployeeSchedule, Justificante, JustificanteArchivo, asisten
 BASE_DIR1 = 'UsuariosImagenes'
 
 
-# Create your views here.
+# Crear tus vistas aquí.
 @require_http_methods(["POST", "GET"])
 @login_required
 def custom_logout(request):
-    """Cerrar sesión con POST o redirigir con GET y cerrar Sesion"""
+    """
+    Cerrar sesión con POST o redirigir con GET y cerrar Sesion.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Redirige a la página de inicio de sesión.
+    """
     if request.method == "POST":
         logout(request)
     else:
@@ -50,6 +58,15 @@ def custom_logout(request):
 
 @login_required
 def error_view(request):
+    """
+    Vista de error para usuarios no autorizados.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de error con un mensaje.
+    """
     username = request.GET.get('username', 'Unknown')
     role = request.GET.get('role', 'Unknown')
     message = f"Usuario: {username} con Rol: {role} no tiene acceso a esta página."
@@ -60,6 +77,15 @@ def error_view(request):
 @login_required
 @admin_required
 def create_admin(request):
+    """
+    Crear un nuevo administrador.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Redirige al dashboard si el formulario es válido, de lo contrario renderiza la plantilla de creación de administrador.
+    """
     if request.method == 'POST':
         form = AdminCreationForm(request.POST)
         if form.is_valid():
@@ -76,6 +102,15 @@ def create_admin(request):
 @login_required
 @admin_required
 def create_manager(request):
+    """
+    Crear un nuevo gerente.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Redirige al dashboard si el formulario es válido, de lo contrario renderiza la plantilla de creación de gerente.
+    """
     if request.method == 'POST':
         form = ManagerCreationForm(request.POST)
         if form.is_valid():
@@ -102,6 +137,15 @@ def create_manager(request):
 @login_required
 @admin_or_manager_required
 def create_employee(request):
+    """
+    Crear un nuevo empleado.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Redirige al dashboard si el formulario es válido, de lo contrario renderiza la plantilla de creación de empleado.
+    """
     if request.method == 'POST':
         form = EmployeeCreationForm(request.POST, user=request.user)
         if form.is_valid():
@@ -132,6 +176,15 @@ def create_employee(request):
 @login_required
 @admin_or_manager_required
 def list_users(request):
+    """
+    Listar usuarios según el rol del usuario actual.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de lista de usuarios.
+    """
     user = request.user
     if user.is_admin():
         # Administradores ven todos los usuarios
@@ -158,6 +211,16 @@ def list_users(request):
 @login_required
 @admin_or_manager_required
 def edit_user(request, user_id):
+    """
+    Editar un usuario existente.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+        user_id (int): ID del usuario a editar.
+
+    Returns:
+        HttpResponse: Redirige a la lista de usuarios si el formulario es válido, de lo contrario renderiza la plantilla de edición de usuario.
+    """
     user = get_object_or_404(CustomUser, id=user_id)
     if request.method == 'POST':
         form = UserEditForm(request.POST, instance=user, user=request.user)
@@ -173,6 +236,16 @@ def edit_user(request, user_id):
 @login_required
 @admin_or_manager_required
 def delete_user(request, user_id):
+    """
+    Eliminar un usuario existente.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+        user_id (int): ID del usuario a eliminar.
+
+    Returns:
+        HttpResponse: Redirige a la lista de usuarios después de eliminar, de lo contrario renderiza la plantilla de confirmación de eliminación.
+    """
     user = get_object_or_404(CustomUser, id=user_id)
 
     if request.method == 'POST':
@@ -207,6 +280,15 @@ def delete_user(request, user_id):
 
 @login_required
 def capturarimagenes(request):
+    """
+    Vista para capturar imágenes de usuarios.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de captura de imágenes con el número de imágenes restantes.
+    """
     # Define the base path and user directory
     base_path = os.path.join(settings.MEDIA_ROOT, 'UsuariosImagenes', request.user.username)
 
@@ -224,6 +306,15 @@ def capturarimagenes(request):
 
 @login_required
 def get_remaining_images(request):
+    """
+    Vista para obtener el número de imágenes restantes que un usuario puede subir.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        JsonResponse: Devuelve el número de imágenes restantes en formato JSON.
+    """
     # Define the base path and user directory
     base_path = os.path.join(settings.MEDIA_ROOT, 'UsuariosImagenes', request.user.username)
 
@@ -240,6 +331,15 @@ def get_remaining_images(request):
 @login_required
 @csrf_exempt
 def save_image(request):
+    """
+    Vista para guardar una imagen subida por el usuario.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        JsonResponse: Devuelve el estado de la operación en formato JSON.
+    """
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -282,13 +382,24 @@ def save_image(request):
 @login_required
 @admin_or_manager_required
 def index_photos(request):
+    """
+    Vista para indexar fotos de usuarios.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        JsonResponse: Devuelve el estado de la operación en formato JSON.
+        HttpResponse: Renderiza la plantilla de indexación de base de usuarios.
+    """
     if request.method == 'POST':
         if cache.get('is_indexing'):
             logger.info('Indexing is already in progress.')
             logger.info('Indexing flag create.')
             return JsonResponse({'status': 'error', 'message': 'Indexing is already in progress.'})
 
-        cache.set('is_indexing', True, timeout=None)  # Set the flag to indicate indexing is in progress
+        cache.set('is_indexing', True,
+                  timeout=None)  # Establecer la bandera para indicar que la indexación está en progreso
         try:
             messages = cargar_img_conocidad_directorio('UsuariosImagenes')
             return JsonResponse({'status': 'success', 'message': 'Indexing completed', 'messages': messages})
@@ -296,7 +407,7 @@ def index_photos(request):
             logger.info(f'Error during indexing: {e}')
             return JsonResponse({'status': 'error', 'message': 'An error occurred during indexing.'})
         finally:
-            cache.delete('is_indexing')  # Clear the flag after indexing is done
+            cache.delete('is_indexing')  # Borrar la bandera después de que la indexación haya terminado
             logger.info('Indexing flag cleared.')
     else:
         users = CustomUser.objects.all()
@@ -305,6 +416,15 @@ def index_photos(request):
 
 @login_required
 def dashboard(request):
+    """
+    Vista del panel de control del usuario.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla del panel de control con el contexto del usuario.
+    """
     # Verificar los roles del usuario
     es_admin = request.user.is_admin()
     es_gerente = request.user.is_manager()
@@ -336,6 +456,15 @@ def dashboard(request):
 
 @login_required
 def subir_justificante(request):
+    """
+    Vista para subir un justificante.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de subida de justificante con el formulario.
+    """
     if request.method == 'POST':
         form = JustificanteForm(request.POST, request.FILES)
         if form.is_valid():
@@ -402,6 +531,15 @@ def subir_justificante(request):
 
 @login_required
 def lista_justificantes(request):
+    """
+    Vista para listar justificantes según el rol del usuario.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de lista de justificantes.
+    """
     # Filtrar justificantes según el rol del usuario
     if request.user.role == 'admin':
         # Los administradores pueden ver todos los justificantes
@@ -491,6 +629,16 @@ def lista_justificantes(request):
 
 @login_required
 def editar_justificante(request, justificante_id):
+    """
+    Vista para editar un justificante existente.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+        justificante_id (int): ID del justificante a editar.
+
+    Returns:
+        HttpResponse: Redirige a la lista de justificantes si el formulario es válido, de lo contrario renderiza la plantilla de edición de justificante.
+    """
     justificante = get_object_or_404(Justificante, id=justificante_id)
 
     # Verifica si el usuario tiene el rol adecuado y si el estado es "Pendiente"
@@ -558,6 +706,15 @@ def editar_justificante(request, justificante_id):
 
 @login_required
 def edit_employee_profile(request):
+    """
+    Vista para editar el perfil de un empleado.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de edición de perfil de empleado con el formulario.
+    """
     if request.method == 'POST':
         form = EmployeeProfileForm(request.POST, instance=request.user)
         if form.is_valid():
@@ -572,21 +729,30 @@ def edit_employee_profile(request):
 
 @login_required
 def change_password(request):
+    """
+    Vista para cambiar la contraseña del usuario.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de cambio de contraseña con el formulario.
+    """
     if request.method == 'POST':
         form = EmployeePasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             old_password = form.cleaned_data.get('old_password')
             new_password1 = form.cleaned_data.get('new_password1')
 
-            # Verify if the new password is the same as the old password
+            # Verificar si la nueva contraseña es la misma que la antigua
             if old_password == new_password1:
                 messages.error(request, 'The new password cannot be the same as the old password.')
                 return render(request, 'change_password.html', {'form': form})
 
             user = form.save()
-            update_session_auth_hash(request, user)  # Keep the session active after changing the password
+            update_session_auth_hash(request, user)  # Mantener la sesión activa después de cambiar la contraseña
 
-            # Send an email with the new password
+            # Enviar un correo electrónico con la nueva contraseña
             send_mail(
                 'Your password has been changed',
                 f'Hello {user.username},\n\nYour password has been successfully changed. Your new password is: {new_password1}\n\nBest regards,\nThe team',
@@ -607,6 +773,15 @@ def change_password(request):
 @login_required
 @admin_or_manager_required
 def change_schedule(request):
+    """
+    Vista para cambiar el horario de un empleado.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Redirige al dashboard si el formulario es válido, de lo contrario renderiza la plantilla de cambio de horario.
+    """
     if request.method == 'POST':
         form = ScheduleForm(request.POST, user=request.user)
         if form.is_valid():
@@ -614,7 +789,7 @@ def change_schedule(request):
             month = form.cleaned_data['month']
             schedule = form.cleaned_data['schedule']
 
-            # Map the selected schedule to start and end times
+            # Mapear el horario seleccionado a las horas de inicio y fin
             schedule_mapping = {
                 '7am-3pm': ('07:00', '15:00'),
                 '3pm-11pm': ('15:00', '23:00'),
@@ -622,14 +797,14 @@ def change_schedule(request):
             }
             schedule_start, schedule_end = schedule_mapping[schedule]
 
-            # Check if the schedule already exists for the employee and month
+            # Verificar si el horario ya existe para el empleado y el mes
             employee_schedule, created = EmployeeSchedule.objects.update_or_create(
                 employee=employee,
                 month=month,
                 defaults={
                     'schedule_start': schedule_start,
                     'schedule_end': schedule_end,
-                    'username': employee.username  # Add the username here
+                    'username': employee.username  # Agregar el nombre de usuario aquí
                 }
             )
             return redirect('dashboard')
@@ -641,6 +816,15 @@ def change_schedule(request):
 
 @login_required
 def buscar_imagenes(request):
+    """
+    Vista para buscar imágenes de un usuario.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de mostrar imágenes con las imágenes encontradas.
+    """
     nombre_usuario = request.user.username
     ruta_usuario = os.path.join(settings.MEDIA_ROOT1, nombre_usuario)
 
@@ -658,6 +842,17 @@ def buscar_imagenes(request):
 
 @login_required
 def eliminar_imagen(request, nombre_usuario, nombre_imagen):
+    """
+    Vista para eliminar una imagen de un usuario.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+        nombre_usuario (str): Nombre de usuario.
+        nombre_imagen (str): Nombre de la imagen a eliminar.
+
+    Returns:
+        HttpResponse: Redirige a la búsqueda de imágenes si la eliminación es exitosa, de lo contrario renderiza la plantilla de error.
+    """
     ruta_usuario = os.path.join(settings.MEDIA_ROOT, 'UsuariosImagenes', nombre_usuario)
     imagenes = [archivo for archivo in os.listdir(ruta_usuario) if archivo.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
@@ -676,18 +871,45 @@ def eliminar_imagen(request, nombre_usuario, nombre_imagen):
 @login_required
 @admin_or_manager_required
 def reconocimiento_usuarios(request):
+    """
+    Vista para el reconocimiento de usuarios.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de reconocimiento de usuarios.
+    """
     return render(request, 'ReconocimientoUsuarios.html')
 
 
 @login_required
 @admin_or_manager_required
 def reportes(request):
+    """
+    Vista para mostrar la página de reportes.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de reportes.
+    """
     return render(request, "reportes.html")
 
 
 @login_required
 @admin_or_manager_required
 def reporte_justificantes(request):
+    """
+    Vista para generar el reporte de justificantes.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de reporte de justificantes con los datos filtrados.
+    """
     if request.user.role not in ['admin', 'manager']:
         messages.error(request, 'No tienes permiso para acceder a esta página.')
         return redirect('dashboard')
@@ -758,6 +980,15 @@ def reporte_justificantes(request):
 @login_required
 @admin_or_manager_required
 def reporte_solicitudes(request):
+    """
+    Vista para generar el reporte de solicitudes de justificantes.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de reporte de solicitudes con los datos filtrados.
+    """
     empleados = CustomUser.objects.none()
     if request.user.is_manager():
         empleados = CustomUser.objects.filter(manager=request.user)
@@ -818,6 +1049,15 @@ def reporte_solicitudes(request):
 
 
 def obtener_rostros_conocidos(db_name='basegestionempleados'):
+    """
+    Obtiene los rostros conocidos desde la base de datos.
+
+    Args:
+        db_name (str): Nombre de la base de datos.
+
+    Returns:
+        tuple: Una tupla con dos listas, una de rostros conocidos y otra de nombres conocidos.
+    """
     conn = mysql.connector.connect(host='localhost', user='root',  # Cambia a tu usuario de MySQL
                                    password='',  # Cambia a tu contraseña de MySQL
                                    database=db_name)
@@ -835,6 +1075,17 @@ def obtener_rostros_conocidos(db_name='basegestionempleados'):
 
 
 def comparar_rostros(known_faces, known_names, captured_image_path):
+    """
+    Compara los rostros capturados con los rostros conocidos.
+
+    Args:
+        known_faces (list): Lista de codificaciones de rostros conocidos.
+        known_names (list): Lista de nombres conocidos.
+        captured_image_path (str): Ruta de la imagen capturada.
+
+    Returns:
+        str: Nombre del rostro coincidente, o None si no hay coincidencia.
+    """
     captured_image = face_recognition.load_image_file(captured_image_path)
     captured_image_encoding = face_recognition.face_encodings(captured_image)
 
@@ -844,10 +1095,10 @@ def comparar_rostros(known_faces, known_names, captured_image_path):
     for known_face, name in zip(known_faces, known_names):
         match = face_recognition.compare_faces([known_face], captured_image_encoding[0])
         if match[0]:
-            # Insert match information into the database
+            # Insertar información de coincidencia en la base de datos
             conn = mysql.connector.connect(host='localhost', user='root', password='', database='basegestionempleados')
             c = conn.cursor()
-            match_time = datetime.now()  # Corrected this line
+            match_time = datetime.now()  # Línea corregida
             c.execute("INSERT INTO match_info (name, match_time) VALUES (%s, %s)", (name, match_time))
             conn.commit()
             conn.close()
@@ -856,17 +1107,24 @@ def comparar_rostros(known_faces, known_names, captured_image_path):
 
 
 def capturar_img_de_camara(known_faces, known_names):
+    """
+    Captura imágenes desde la cámara y compara con rostros conocidos.
+
+    Args:
+        known_faces (list): Lista de codificaciones de rostros conocidos.
+        known_names (list): Lista de nombres conocidos.
+    """
     video_capture = cv2.VideoCapture(1)
     while True:
         try:
             ret, frame = video_capture.read()
             cv2.imshow('Video', frame)
 
-            # presiona 'q' para salir de la transmisión de la cámara
+            # Presiona 'q' para salir de la transmisión de la cámara
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-            # presiona la barra espaciadora para capturar la imagen
+            # Presiona la barra espaciadora para capturar la imagen
             if cv2.waitKey(1) & 0xFF == ord(' '):
                 if ret:
                     cv2.imwrite('imagen_capturada.jpg', frame)
@@ -885,10 +1143,25 @@ def capturar_img_de_camara(known_faces, known_names):
 
 
 def generate_reset_code():
+    """
+    Genera un código de restablecimiento de contraseña.
+
+    Returns:
+        str: Código de restablecimiento de 6 caracteres.
+    """
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
 
 def password_reset_request(request):
+    """
+    Vista para solicitar el restablecimiento de contraseña.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de solicitud de restablecimiento de contraseña con el formulario.
+    """
     if request.method == 'POST':
         form = PasswordResetRequestForm(request.POST)
         if form.is_valid():
@@ -915,6 +1188,15 @@ def password_reset_request(request):
 
 
 def password_reset_verify(request):
+    """
+    Vista para verificar el código de restablecimiento de contraseña y establecer una nueva contraseña.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de verificación de restablecimiento de contraseña con el formulario.
+    """
     if request.method == 'POST':
         form = PasswordResetVerifyForm(request.POST)
         if form.is_valid():
@@ -938,6 +1220,15 @@ def password_reset_verify(request):
 @login_required
 @csrf_exempt
 def save_imagee(request):
+    """
+    Vista para guardar una imagen subida por el usuario y compararla con rostros conocidos.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        JsonResponse: Devuelve un mensaje indicando si se encontró una coincidencia o no.
+    """
     if request.method == 'POST':
         data = json.loads(request.body)
         image_data = data['image'].split(',')[1]
@@ -971,6 +1262,15 @@ def save_imagee(request):
 @login_required
 @admin_or_manager_required
 def reporte_inasistencias(request):
+    """
+    Vista para generar el reporte de inasistencias de empleados.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de reporte de inasistencias con los datos filtrados.
+    """
     empleados = CustomUser.objects.filter(manager=request.user)
 
     cuatrimestres = {
@@ -1032,6 +1332,15 @@ def reporte_inasistencias(request):
 
 @login_required
 def ver_horarios(request):
+    """
+    Vista para ver los horarios de los empleados.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de ver horarios con los horarios filtrados.
+    """
     user = request.user
     if user.role == 'manager':
         # Filtrar horarios solo de los empleados asociados al gerente
@@ -1052,6 +1361,15 @@ def ver_horarios(request):
 
 @login_required
 def reporte_porcentajes_asistencias(request):
+    """
+    Vista para generar el reporte de porcentajes de asistencias.
+
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+
+    Returns:
+        HttpResponse: Renderiza la plantilla de reporte de porcentajes de asistencias con los datos filtrados.
+    """
     # Obtener el usuario actual
     user = request.user
 
